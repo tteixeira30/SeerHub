@@ -6,7 +6,9 @@
 **Brief de origem:** `seerhub.md`
 
 > **Revisão de 2026-07-27:** o parser de tips deixou de ser um modelo de linguagem e passou a ser uma gramática determinística com correspondência difusa de equipas (R6). Motivo: custo por parse (~€0,11 com a Claude API), latência (~30s vs <50ms) e testabilidade. A interface `TipTextParser` mantém a IA plugável se o formato se revelar rígido demais. Afetou R5, R6, R7, o modelo de dados, a abordagem técnica, os pressupostos e Q2.
-O
+
+> **Revisão de 2026-07-27 (durante a implementação, antes de F05):** o calendário de sincronização do R5 deixou de ser sondagem fixa e passou a ser **a pedido**. Motivo: o plano contratado da API-Football é o gratuito, com 100 chamadas/dia, e o calendário anterior (resultados de 15 em 15 minutos, jogos de 6 em 6 horas) consumia exatamente 100 chamadas/dia **com uma única liga** — sem folga para retentativas, para desenvolvimento, nem para as seis ligas escolhidas. A sincronização passa a chamar a API apenas quando existe uma seleção pendente por resolver, agrupando por liga e dia, com orçamento diário explícito. Q1 fica resolvida. Afetou R5 e, indiretamente, o que o R8 consegue resolver automaticamente.
+
 ## 1. Resumo
 
 O SeerHub é uma plataforma web onde tipsters criam a sua própria comunidade de apostas, definem o preço da subscrição e publicam tips; e onde o apostador final subscreve várias comunidades e vê tudo — tips, estatísticas e conversa — num único sítio, em vez de saltar entre Telegram, Patreon e BuyMeACoffee.
@@ -140,8 +142,10 @@ Um utilizador acumula papéis: pode ser dono da comunidade A, moderador da B e m
 **Prioridade:** Must
 **Descrição:** Ligas, equipas, emblemas, jogos e resultados vêm da API-Football e são guardados em Postgres. A base de dados é a fonte de verdade em runtime; a API externa nunca é chamada no caminho do pedido do utilizador.
 **Critérios de aceitação:**
-- [ ] Uma tarefa agendada sincroniza os jogos das ligas configuradas para os próximos 7 dias, com periodicidade configurável (por omissão 6 horas).
-- [ ] Uma tarefa agendada sincroniza resultados de jogos terminados nas últimas 24 horas, de 15 em 15 minutos.
+- [ ] Uma tarefa agendada sincroniza os jogos das ligas configuradas para os próximos 7 dias, com periodicidade configurável (por omissão 12 horas).
+- [ ] A sincronização de resultados é **a pedido, não por sondagem fixa**: uma tarefa agendada frequente verifica **em base de dados** se existe alguma seleção pendente cujo jogo já começou há mais de duas horas e ainda não está `FINISHED`; só nesse caso chama a API externa, e agrupa todos os jogos em falta por liga e dia num único pedido. Um dia sem tips pendentes custa zero chamadas.
+- [ ] O orçamento diário de chamadas é configurável (`API_FOOTBALL_DAILY_BUDGET`, por omissão 100) e é respeitado: quando o consumo do dia atinge o limite, a sincronização deixa de chamar a API, regista o facto e retoma no dia seguinte — nunca esgota a quota a meio de um ciclo nem falha silenciosamente.
+- [ ] Um teste prova que, com N seleções pendentes espalhadas por M jogos da mesma liga e do mesmo dia, é feita **uma** chamada e não M.
 - [ ] Equipas e ligas são guardadas com nome, nome curto, país e URL do emblema; o emblema é servido através de cache local para não depender do CDN externo em cada render.
 - [ ] Cada equipa guarda também um nome normalizado (minúsculas, sem acentos, sem prefixos e sufixos de clube), gerado na sincronização, com índice de trigramas para a correspondência difusa do R6.
 - [ ] O fornecedor externo está atrás de uma interface `FootballDataProvider`; existe uma implementação de teste com dados fixos que permite correr toda a suite sem rede nem chave de API.
@@ -400,7 +404,7 @@ Decisões tomadas por mim, não pelo utilizador. É aqui que deves olhar com ate
 
 | # | Questão | Bloqueia | Responsável | Quando |
 | --- | --- | --- | --- | --- |
-| Q1 | Que plano da API-Football e que ligas cobrir inicialmente? O plano gratuito limita chamadas por dia e determina que competições resolvem automaticamente. | R5, R8 | utilizador | Antes de M2 |
+| ~~Q1~~ | **RESOLVIDA em 2026-07-27.** Plano gratuito da API-Football, 100 chamadas/dia. Ligas cobertas no arranque: Primeira Liga, Premier League, La Liga, Serie A, Bundesliga e Ligue 1. A quota obrigou a redesenhar o calendário do R5 para sincronização a pedido — ver a nota de revisão no topo. | R5, R8 | — | Fechada |
 | Q2 | O formato do R6 aguenta o que um tipster real escreve? Mostrar o exemplo a um ou dois tipsters e pedir que escrevam um lote típico nesse formato, antes de existir código. | R6, R7 | utilizador | Antes de M2 |
 | Q3 | Quando entrarem pagamentos reais: o que acontece a uma subscrição ativa se a comunidade for suspensa a meio do período? | Pagamentos (pós-v1) | utilizador | Antes de integrar Stripe |
 | Q4 | Precisa de um período experimental gratuito por comunidade? Afeta o modelo de membership. | R3 | utilizador | Antes de M1 terminar |

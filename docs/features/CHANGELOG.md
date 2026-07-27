@@ -364,3 +364,36 @@ partir de F05.
 **Bloqueio conhecido para F05:** a renomeação `API_KEY` → `API_FOOTBALL_KEY` no `.env`, e os
 detalhes de Q1 da spec (plano da API-Football contratado e ligas a cobrir), que o utilizador
 disse ter mas ainda não especificou.
+
+## 2026-07-27 21:05 — SPEC ALTERADA (R5) · Q1 RESOLVIDA
+
+O utilizador confirmou: plano **gratuito** da API-Football, **100 chamadas/dia**, e as ligas
+a cobrir são **Primeira Liga, Premier League, La Liga, Serie A, Bundesliga e Ligue 1** (seis).
+Q1 da spec fica fechada.
+
+**Conflito detetado antes de F05, não durante.** O calendário do R5 tal como escrito —
+resultados de 15 em 15 minutos (96 execuções/dia) e jogos de 6 em 6 horas (4 execuções/dia) —
+consome exatamente 100 chamadas/dia **com uma única liga**, assumindo um pedido por execução.
+A API-Football consulta por liga e época, por isso com seis ligas seriam ~600 chamadas/dia:
+seis vezes a quota. O R5 dizia que nenhum pedido de utilizador pode falhar por causa da API
+externa, mas o seu próprio calendário garantia que a quota esgotava todos os dias.
+
+**Alteração feita à spec** (`docs/specs/seerhub.md`), com nota de revisão no topo:
+- Catálogo de jogos: periodicidade por omissão passa de 6h para 12h.
+- Resultados: deixam de ser sondagem fixa e passam a ser **a pedido** — a tarefa verifica em
+  base de dados se há alguma seleção pendente cujo jogo começou há mais de duas horas e ainda
+  não terminou, e só então chama a API, agrupando por liga e dia num único pedido. Um dia sem
+  tips pendentes custa zero chamadas.
+- Novo critério: orçamento diário configurável (`API_FOOTBALL_DAILY_BUDGET`, omissão 100),
+  respeitado — ao atingir o limite a sincronização pára e regista, em vez de falhar a meio.
+- Novo critério: um teste prova que N seleções pendentes em M jogos da mesma liga e dia
+  produzem **uma** chamada e não M.
+
+Consumo estimado com as seis ligas: ~15–25 chamadas/dia, contra as ~600 do calendário
+anterior.
+
+Corrigido também um carácter solto (`O`) entre a nota de revisão e o primeiro título, que
+vinha do commit inicial da spec.
+
+Ação do utilizador confirmada: `.env` já tem `API_FOOTBALL_KEY` e continua ignorado pelo git.
+A dívida herdada de F00 está fechada. **F05 deixa de estar bloqueada.**
