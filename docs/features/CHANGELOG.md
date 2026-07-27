@@ -321,3 +321,46 @@ o momento certo: F04 é a feature que reescreve autorização.
 ## 2026-07-27 20:06 — F04 Papéis e permissões · IMPLEMENTING
 
 Implementador lançado (Sonnet 5). Baseline a preservar: 162 testes. Última feature do M1.
+
+## 2026-07-27 20:35 — F04 Papéis e permissões · DONE
+
+43 ficheiros commitados. **226 testes, 0 falhas** — 200 JUnit + 26 Vitest, corridos pelo
+orquestrador. Baseline sobe de 162 para 226, sem regressões.
+
+**Dívida `/__test__/**` fechada e verificada:** `grep -rn "__test__" backend/src/main/java`
+devolve zero linhas. Dois testes impedem o regresso — `SecurityChainIT` prova que o caminho
+interno devolve 401 a anónimos, e `SecurityConfigConventionsTest` é guarda mecânico contra a
+reintrodução da regra.
+
+Desvios face ao plano, nenhum contra a spec:
+1. `CommunityPermissionRulesTest` tem 11 testes e não os 10 anunciados — a aritmética do
+   plano estava outra vez desalinhada com a sua própria tabela. O implementador seguiu as
+   linhas nomeadas, que é o critério certo. Total real: 200 JUnit.
+2. `@Qualifier("requestMappingHandlerMapping")` necessário por o contexto de teste ter dois
+   beans desse tipo (MVC e Actuator).
+3. O teste 1l passou a verificar contra `/access` em vez de `/members` — `/members` exige
+   `MANAGE_MODERATORS`, que é exclusivo do dono, logo o teste original não podia provar o que
+   dizia provar.
+4. O grep de verificação encontrou 5 usos de `getOwner().getId().equals` em vez dos 2
+   esperados; os outros 3 são legítimos (cálculo de `ownedByViewer` no DTO e a regra de
+   negócio "não se pode nomear o dono"), não desvios de autorização. Documentado no handoff
+   para não ser confundido com regressão mais tarde.
+
+Dívidas restantes: `npm audit` dev-only, e a renomeação `API_KEY` → `API_FOOTBALL_KEY` no
+`.env` (ação do utilizador, obrigatória antes de F05).
+
+Commit `ede3e14`.
+
+## 2026-07-27 20:36 — MILESTONE M1 CONCLUÍDO · RUN EM PAUSA
+
+F00, F01, F02, F03 e F04 `DONE` — R1, R2, R3, R4 e R15 (exceto seed) implementados e
+testados. 226 testes verdes, 0 falhas, 0 ignorados. Tudo empurrado para
+`github.com/tteixeira30/SeerHub`, commit `ede3e14`.
+
+Paragem planeada conforme a decisão de âmbito de 2026-07-27 16:24. F05–F15 continuam `TODO`
+no backlog e retomam numa invocação seguinte da skill, que lê este changelog e continua a
+partir de F05.
+
+**Bloqueio conhecido para F05:** a renomeação `API_KEY` → `API_FOOTBALL_KEY` no `.env`, e os
+detalhes de Q1 da spec (plano da API-Football contratado e ligas a cobrir), que o utilizador
+disse ter mas ainda não especificou.
