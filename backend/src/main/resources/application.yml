@@ -1,0 +1,59 @@
+spring:
+  application:
+    name: seerhub
+  datasource:
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${POSTGRES_DB:seerhub}
+    username: ${POSTGRES_USER:seerhub}
+    password: ${POSTGRES_PASSWORD:seerhub}
+  jpa:
+    hibernate:
+      ddl-auto: validate      # NUNCA update/create/create-drop, em nenhum perfil
+    open-in-view: false
+    properties:
+      hibernate.jdbc.time_zone: UTC
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+    baseline-on-migrate: false
+  jackson:
+    default-property-inclusion: non_null
+  threads:
+    virtual:
+      enabled: true
+
+server:
+  port: 8080
+  error:
+    include-stacktrace: never
+    include-message: never
+    include-exception: false
+    include-binding-errors: never
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: always      # necessário para expor o componente "db"
+      probes:
+        enabled: true
+
+logging:
+  level:
+    root: ${LOG_LEVEL:INFO}
+  structured:
+    format:
+      console: ecs              # logs JSON com MDC (inclui correlationId)
+
+seerhub:
+  security:
+    jwt-secret: ${JWT_SECRET}                 # sem omissão: obrigatório
+    access-ttl: ${JWT_ACCESS_TTL:PT15M}
+    refresh-ttl: ${JWT_REFRESH_TTL:P30D}
+  football:
+    api-key: ${API_FOOTBALL_KEY:}             # vazio é válido: F05 valida quando sincroniza
+    base-url: ${API_FOOTBALL_BASE_URL:https://v3.football.api-sports.io}
+  uploads:
+    dir: ${UPLOADS_DIR:./uploads}

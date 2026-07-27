@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+    POM agregador do monorepo SeerHub.
+    Não tem parent nem código próprio: existe apenas para que `./mvnw test`
+    corrido na raiz do repositório construa e teste o módulo `backend`.
+    O frontend não é um módulo Maven (ver F00 plan.md, secção 9, H3).
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>pt.seerhub</groupId>
+    <artifactId>seerhub-root</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>SeerHub :: Root</name>
+    <description>POM agregador do monorepo SeerHub.</description>
+
+    <modules>
+        <module>backend</module>
+    </modules>
+</project>

@@ -1,0 +1,14 @@
+# Perfil de desenvolvimento local (fora de contentor).
+# Ativado com SPRING_PROFILES_ACTIVE=local.
+spring:
+  jpa:
+    show-sql: false
+
+logging:
+  structured:
+    format:
+      console: "" # desliga o formato ECS/JSON — logs em texto legível no terminal do developer
+
+# Quando o backend corre fora do docker compose (ex.: IDE), a base de dados
+# está exposta em localhost e não no hostname de serviço "db".
+DB_HOST: localhost

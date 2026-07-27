@@ -1,0 +1,20 @@
+# Perfil "test": usado por todos os *IT e pelos slices que carregam o
+# contexto Spring. Fornece um jwt-secret fixo (não é segredo real — é um
+# valor de teste, cf. ConfigurationConventionsTest) e desliga o formato de
+# log estruturado para manter a saída de testes legível.
+seerhub:
+  security:
+    jwt-secret: teste-segredo-fixo-para-testes-32-caracteres
+
+logging:
+  structured:
+    format:
+      console: ""
+
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: validate
+  datasource:
+    hikari:
+      connection-timeout: 2000 # rápido a falhar em HealthCheckDbDownIT (X1)
