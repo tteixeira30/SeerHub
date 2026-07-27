@@ -461,3 +461,35 @@ opcionais com valores por omissão seguros. Para as personalizar, acrescentar ao
 `API_FOOTBALL_DAILY_BUDGET=100` e `API_FOOTBALL_SEASON=`.
 
 Commit `d4c8c0c`.
+
+## 2026-07-27 22:35 — F06a Gramática de tips · PLANNING
+
+Planeador lançado (Opus 5), com deliberação lisa-loop de 3 minutos (teto). É o requisito de
+maior risco da spec: o formato de texto é o pressuposto de produto que a própria spec marca
+como o mais arriscado, e a gramática é o que decide se o tipster consegue publicar ou não.
+
+Skill corrigida antes deste ciclo: os planos deixam de anunciar totais agregados de testes,
+porque em F01, F04 e F05 o total em prosa divergiu da própria tabela do plano.
+
+## 2026-07-27 22:52 — F06a Gramática de tips · PLANNED
+
+`docs/features/F06a-gramatica-tips/plan.md` — 753 linhas, 9 secções.
+
+Duas coisas que o plano resolve bem:
+1. **Secção 3.6 é uma lista fechada e explícita dos critérios de R6 adiados para F06b.** O
+   planeador de F06b herda-a tal como está, em vez de ter de fazer diff ao requisito e
+   arriscar deixar cair um critério na fenda entre as duas features. Inclui a nota de que o
+   corpus de variantes de escrita (`Sporting CP`, `Man Utd`, `Internazionale`) é de F06b e não
+   de F06a — para a gramática um nome de equipa é uma cadeia opaca entre a data e o separador.
+2. **O critério de desempenho foi dividido em vez de copiado.** R6 exige p95 abaixo de 200 ms
+   incluindo a correspondência de equipas; F06a orça 20 ms desses 200 para a gramática e
+   mede-o com margem larga, deixando a medição ponta-a-ponta para F06b. Um teste de tempo com
+   o limiar colado ao valor real é pior do que nenhum, e o plano diz isso explicitamente.
+
+Quando nenhuma linha valida, o resultado traz uma bandeira `formatoNaoReconhecido` e o exemplo
+canónico — o caso do tipster que cola o formato do Telegram dele, que a spec identifica como
+indistinguível de um bug para quem usa pela primeira vez.
+
+## 2026-07-27 22:53 — F06a Gramática de tips · IMPLEMENTING
+
+Implementador lançado (Sonnet 5). Baseline a preservar: 300 testes.
