@@ -3,7 +3,7 @@
 **Spec:** `docs/specs/seerhub.md`
 **Run iniciado:** 2026-07-27
 **Comando de testes:** `./mvnw test` (raiz, corre `*Test` e `*IT`) e `cd frontend && npm test`
-**Baseline:** 300 testes a passar, 0 a falhar (274 JUnit + 26 Vitest), desde F05
+**Baseline:** 366 testes a passar, 0 a falhar (340 JUnit + 26 Vitest), desde F06a
 
 **Ambiente verificado:** Java 21.0.7 · Maven 3.9.10 · Node 22.16.0 · Docker 28.1.1 (a correr, Testcontainers viável)
 
@@ -19,7 +19,7 @@
 | F03 | Subscrições e controlo de acesso | R3 | F02 | M1 | DONE | 2026-07-27 |
 | F04 | Papéis e permissões | R4 | F03 | M1 | DONE | 2026-07-27 |
 | F05 | Sincronização de dados de futebol | R5 | F00 | M2 | DONE | 2026-07-27 |
-| F06a | Gramática de tips | R6 (gramática) | F00 | M2 | IMPLEMENTING | 2026-07-27 |
+| F06a | Gramática de tips | R6 (gramática) | F00 | M2 | DONE | 2026-07-27 |
 | F06b | Correspondência de equipas e aliases | R6 (matching) | F05, F06a, F02 | M2 | TODO | — |
 | F07 | Revisão e publicação de tips | R7 | F06b, F04 | M2 | TODO | — |
 | F08 | Resolução de tips | R8 | F07, F05 | M3 | TODO | — |

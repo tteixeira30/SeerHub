@@ -493,3 +493,28 @@ indistinguível de um bug para quem usa pela primeira vez.
 ## 2026-07-27 22:53 — F06a Gramática de tips · IMPLEMENTING
 
 Implementador lançado (Sonnet 5). Baseline a preservar: 300 testes.
+
+## 2026-07-27 23:40 — F06a Gramática de tips · DONE
+
+43 ficheiros commitados. **366 testes, 0 falhas** — 340 JUnit + 26 Vitest, corridos pelo
+orquestrador. Baseline sobe de 300 para 366. Zero ficheiros existentes editados.
+
+p95 da gramática medido em **0,18 ms** contra o orçamento de 20 ms — cerca de 108x de margem,
+sem nenhum limiar afrouxado. Inclui guarda contra backtracking catastrófico.
+
+**Desvio que vale a pena registar, porque é o tipo certo de desvio:** o plano afirmava que o
+exemplo literal de formato da spec produz 6 tips com 8 seleções. Não produz — são 3 simples
+mais um `MULT` de 2, ou seja **4 tips com 5 seleções**. As 6 tips com 8 seleções são o corpus
+fixo do critério R6-10, que é "5 tips simples e 1 acumulador de 3 jogos": outro conjunto de
+dados. O implementador separou os dois e testa ambos (`TipFormatExampleTest` e
+`TipFixedCorpusTest.cincoSimplesMaisUmAcumuladorDeTresProduzemSeisTipsComOitoSelecoes`).
+Verificado por mim contra a spec: está certo. Não foi um teste enfraquecido para passar, foi
+uma contagem errada do plano corrigida.
+
+Outros desvios menores: dois métodos de diagnóstico aditivos em `MarketDefinition`, e
+`MatchFieldScanner` devolve `LocalDate` em vez de `MonthDay`.
+
+A lista da secção 3.6 (critérios de R6 adiados) foi transportada literalmente para o handoff,
+para o planeador de F06b a herdar sem ter de fazer diff ao requisito.
+
+Commit pendente de push.
