@@ -5,6 +5,11 @@
 seerhub:
   security:
     jwt-secret: teste-segredo-fixo-para-testes-32-caracteres
+  subscriptions:
+    # D-14 do plano de F03: desligada durante a suite — todos os testes de
+    # expiração invocam expirarMembershipsVencidas() diretamente, nunca
+    # esperam pelo relógio.
+    expiry-cron: "-"
 
 logging:
   structured:

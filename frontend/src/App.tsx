@@ -3,11 +3,13 @@ import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AuthProvider } from "@/lib/auth";
 import { AccountPage } from "@/pages/AccountPage";
+import { CommunityPage } from "@/pages/CommunityPage";
 import { CommunitySettingsPage } from "@/pages/CommunitySettingsPage";
 import { CreateCommunityPage } from "@/pages/CreateCommunityPage";
 import { HealthPage } from "@/pages/HealthPage";
 import { LoginPage } from "@/pages/LoginPage";
 import { MyCommunitiesPage } from "@/pages/MyCommunitiesPage";
+import { MySubscriptionsPage } from "@/pages/MySubscriptionsPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 
 export function App() {
@@ -46,6 +48,22 @@ export function App() {
           element={
             <RequireAuth>
               <CommunitySettingsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/subscricoes"
+          element={
+            <RequireAuth>
+              <MySubscriptionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/comunidades/:slug"
+          element={
+            <RequireAuth>
+              <CommunityPage />
             </RequireAuth>
           }
         />

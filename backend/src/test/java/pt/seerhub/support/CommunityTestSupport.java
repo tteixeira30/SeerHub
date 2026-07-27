@@ -104,4 +104,17 @@ public class CommunityTestSupport {
         return jdbcTemplate.queryForObject(
                 "SELECT " + coluna + " FROM communities WHERE slug = ?", Object.class, slug);
     }
+
+    /** F03: empurra {@code expires_at} de uma linha já existente (ex.: para o passado, para simular expiração). */
+    public void definirExpiracao(long communityId, long userId, Instant expiresAt) {
+        jdbcTemplate.update(
+                "UPDATE community_memberships SET expires_at = ? WHERE community_id = ? AND user_id = ?",
+                expiresAt == null ? null : java.sql.Timestamp.from(expiresAt), communityId, userId);
+    }
+
+    /** F03: apaga a linha de membership de um utilizador — usado para simular "dono sem linha" (5b). */
+    public void apagarMembership(long communityId, long userId) {
+        jdbcTemplate.update(
+                "DELETE FROM community_memberships WHERE community_id = ? AND user_id = ?", communityId, userId);
+    }
 }

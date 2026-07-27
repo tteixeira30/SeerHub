@@ -29,15 +29,19 @@ import pt.seerhub.user.domain.User;
  * entidade, quem escreve primeiro mapeia-a), mas só insere <b>exatamente
  * uma linha por comunidade</b>, no momento da criação, com
  * {@code role=OWNER}, {@code status=ACTIVE}, {@code expiresAt=null} — daí
- * o único construtor público ser a fábrica estática {@link #deDono}, que
- * fixa esses valores para F02 não conseguir criar por acidente uma linha
- * que pertence a F03. F02 <b>nunca</b> faz {@code UPDATE} a uma linha de
- * membership (nem à sua própria linha {@code OWNER}, nem a nenhuma outra):
- * toda a criação de linhas {@code MEMBER}/{@code MODERATOR}, toda a
- * transição de {@code status} (ACTIVE→CANCELLED/EXPIRED) e todo o uso de
- * {@code expiresAt} fora do {@code null} do dono pertencem a F03/F04. O
- * campo {@link #version} existe e está mapeado (bloqueio otimista de
- * F03/F08), mas nunca é escrito por F02 depois do {@code INSERT} inicial.
+ * o único construtor público de F02 ser a fábrica estática {@link #deDono}.
+ * F02 <b>nunca</b> fez {@code UPDATE} a uma linha de membership (nem à sua
+ * própria linha {@code OWNER}, nem a nenhuma outra).
+ *
+ * <p><b>F03 é dona de toda a transição de estado (§2.1 do plano de F03):</b>
+ * a fábrica {@link #deSubscritor} cria a linha {@code MEMBER}/{@code ACTIVE}
+ * de uma subscrição nova, e {@link #cancelar()}, {@link #reativar()} e
+ * {@link #renovar(Instant)} são as três transições que a
+ * {@code SubscriptionService} usa. {@code deDono} fica intacta — nada é
+ * removido nem renomeado. O campo {@link #version} está mapeado (bloqueio
+ * otimista); a tarefa diária de expiração incrementa-o explicitamente por
+ * ser um {@code UPDATE} em bloco (D-13 do plano de F03), que não passa pelo
+ * bloqueio otimista do Hibernate.
  */
 @Entity
 @Table(name = "community_memberships")
@@ -98,6 +102,33 @@ public class CommunityMembership {
      */
     public static CommunityMembership deDono(Community community, User owner, Clock clock) {
         return new CommunityMembership(community, owner, MembershipRole.OWNER, MembershipStatus.ACTIVE, null, clock);
+    }
+
+    /**
+     * A membership {@code MEMBER} criada por uma subscrição nova (F03,
+     * D-7): sempre {@code ACTIVE}, sempre com {@code expiresAt} a 30 dias
+     * (calculado por {@code MembershipAccessRules.proximaExpiracao}, nunca
+     * aqui — esta fábrica só fixa o papel e o estado).
+     */
+    public static CommunityMembership deSubscritor(Community community, User user, Instant expiresAt, Clock clock) {
+        return new CommunityMembership(community, user, MembershipRole.MEMBER, MembershipStatus.ACTIVE, expiresAt,
+                clock);
+    }
+
+    /** Cancela a subscrição (D-9): só muda o estado, {@link #expiresAt} fica intacta — o acesso dura até lá. */
+    public void cancelar() {
+        this.status = MembershipStatus.CANCELLED;
+    }
+
+    /** Repõe {@code ACTIVE} sem tocar em {@link #expiresAt} (D-7): reativar não oferece 30 dias grátis. */
+    public void reativar() {
+        this.status = MembershipStatus.ACTIVE;
+    }
+
+    /** Renova: {@code ACTIVE} com uma nova data de expiração (D-7, resubscrição depois de expirar). */
+    public void renovar(Instant novoExpiresAt) {
+        this.status = MembershipStatus.ACTIVE;
+        this.expiresAt = novoExpiresAt;
     }
 
     @PrePersist

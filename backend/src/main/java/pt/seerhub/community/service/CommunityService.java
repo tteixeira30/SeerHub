@@ -107,6 +107,19 @@ public class CommunityService {
      */
     @Transactional(readOnly = true)
     public CommunityResponse obterParaLeitura(String slug, Long viewerIdOuNull) {
+        Community community = obterEntidadeParaLeitura(slug, viewerIdOuNull);
+        return CommunityResponse.de(community, viewerIdOuNull);
+    }
+
+    /**
+     * Extração de método usada por F03 (sem mudança de comportamento):
+     * resolve a <b>entidade</b> com a mesma regra de visibilidade que
+     * {@link #obterParaLeitura} já aplicava — {@code CommunityAccessController}
+     * usa-a para o {@code member-area}, mantendo o {@code 404} de F02 num
+     * sítio só.
+     */
+    @Transactional(readOnly = true)
+    public Community obterEntidadeParaLeitura(String slug, Long viewerIdOuNull) {
         Community community = communityRepository.findBySlug(slug)
                 .orElseThrow(this::comunidadeNaoEncontrada);
 
@@ -119,7 +132,7 @@ public class CommunityService {
             throw comunidadeNaoEncontrada();
         }
 
-        return CommunityResponse.de(community, viewerIdOuNull);
+        return community;
     }
 
     /** Listagem pública (D-6): só {@code ACTIVE}. */

@@ -208,3 +208,62 @@ reescrever `SecurityConfig` a sério.
 ## 2026-07-27 18:41 — F02 Criação e gestão de comunidades · IMPLEMENTING
 
 Implementador lançado (Sonnet 5). Baseline a preservar: 62 testes.
+
+## 2026-07-27 19:05 — F02 Criação e gestão de comunidades · DONE
+
+35 ficheiros commitados. **101 testes, 0 falhas** — 84 JUnit + 17 Vitest, corridos pelo
+orquestrador. Baseline sobe de 62 para 101, sem regressões.
+
+**Fronteira F02/F03 verificada no código, não só reportada:** o único `setStatus` no pacote
+`community` é em `Community`; não existe um único `UPDATE` a `community_memberships`. F03
+recebe a tabela com o desenho por fazer, que era o objetivo.
+
+Lista "não tocar" respeitada: spec, F00, F01, `.claude`, `V1`–`V3` intactos. Nenhuma
+migração nova foi precisa — as duas tabelas já vinham do baseline, e `ddl-auto: validate`
+confirmou o mapeamento.
+
+**Nova baseline: 101 a passar, 0 a falhar.**
+
+Desvios face ao plano, nenhum contra a spec:
+1. **Campos de preço passam a `type="text" inputMode="decimal"`** em vez de `type="number"`
+   — um input numérico de HTML rejeita silenciosamente a vírgula decimal, que é a convenção
+   portuguesa. Descoberto a escrever o teste, não depois.
+2. Um teste usa `jsonPath("$[0]...")` em vez de expressão de filtro Jayway, que devolvia
+   `null` nesta versão da biblioteca.
+
+Verificação em contentor confirmada: registo → criação → nome repetido gera `slug-2`,
+`GET /api/communities` anónimo devolve 200, `PUT` com preço `12.50` devolve 400 (não 500,
+não truncado), quarta comunidade devolve 409.
+
+Dívidas: inalteradas e não agravadas — `/__test__/**` permitAll, `npm audit` dev-only, e a
+renomeação `API_KEY` → `API_FOOTBALL_KEY` no `.env` (ação do utilizador, antes de F05).
+
+Commit `a24e005`.
+
+## 2026-07-27 19:06 — F03 Subscrições e controlo de acesso · PLANNING
+
+Planeador lançado (Opus 5), sem lisa-loop. F03 desenha o ciclo de vida da membership que F02
+deliberadamente não tocou: subscrever, cancelar mantendo acesso até `expires_at`, expirar por
+tarefa agendada, e 403 em conteúdo premium com membership expirada.
+
+## 2026-07-27 19:20 — F03 Subscrições e controlo de acesso · PLANNED
+
+`docs/features/F03-subscricoes/plan.md` — 819 linhas, 9 secções.
+
+A decisão que vale mais do que o resto da feature: **`CommunityAccessService` como porta
+única de acesso a conteúdo premium**, testada diretamente e documentada para F07, F10, F11 e
+F12. Sem ela, a garantia do R11 — "a resposta da API a um não-subscritor não contém os campos
+ocultos" — seria imposta por quatro implementações independentes e portanto não seria imposta
+de todo.
+
+A expiração agendada é testada com `Clock.fixed` e por invocação direta do método de serviço,
+nunca esperando pelo relógio. O `ClockConfig` que F01 introduziu é reutilizado em vez de
+duplicado.
+
+As transições de estado da membership passam a viver na entidade (`cancelar()`, `reativar()`,
+`renovar()`), sem remover nem renomear a fábrica `deDono` que F02 criou — o teste de F02 que
+compara a linha coluna a coluna continua a ser o guarda dessa fronteira.
+
+## 2026-07-27 19:21 — F03 Subscrições e controlo de acesso · IMPLEMENTING
+
+Implementador lançado (Sonnet 5). Baseline a preservar: 101 testes.
