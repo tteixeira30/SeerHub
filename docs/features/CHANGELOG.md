@@ -427,3 +427,37 @@ superfície definida na secção 2.5 do plano.
 ## 2026-07-27 21:26 — F05 Sincronização de dados de futebol · IMPLEMENTING
 
 Implementador lançado (Sonnet 5). Baseline a preservar: 226 testes.
+
+## 2026-07-27 22:30 — F05 Sincronização de dados de futebol · DONE
+
+63 ficheiros commitados. **300 testes, 0 falhas** — 274 JUnit + 26 Vitest, corridos pelo
+orquestrador. Baseline sobe de 226 para 300. Primeira feature do M2 fechada.
+
+Verificado por mim para além dos números:
+- **Nenhum teste toca a rede.** Zero ocorrências de `api-sports.io` e zero URLs http não-locais
+  em `backend/src/test`. Toda a suite corre com `API_FOOTBALL_KEY` vazia.
+- **A fronteira com F08 aguenta.** O pacote `football` tem repositórios de `Fixture`, `League`
+  e `Team` e mais nenhum; `tip_selections` é lida por uma projeção só de leitura para detetar
+  procura, nunca escrita.
+- A única alteração a um teste de baseline (`JwtServiceTest` de F01) é aridade de construtor,
+  consequência de o record `Football` ter ganho campos. Nenhuma assertion mexida.
+
+Desvios face ao plano:
+1. A aritmética do plano voltou a divergir da sua própria tabela — 74 testes novos, não 77. O
+   implementador seguiu as linhas nomeadas, que é o critério certo. **É a terceira vez que
+   isto acontece (F01, F04, F05): os planeadores somam mal os totais em prosa, mas as tabelas
+   estão corretas.** Nota para a skill: pedir que o plano não anuncie totais agregados, só a
+   tabela.
+2. `CrestCacheService` redesenhado para não depender de `FootballDataProvider` — a assinatura
+   original violava a regra do próprio plano de que só o serviço de sincronização depende do
+   fornecedor.
+
+**Correção ao que o implementador reportou:** o handoff diz que a renomeação
+`API_KEY` → `API_FOOTBALL_KEY` continua em aberto. **Não continua** — o utilizador fê-la e eu
+verifiquei-a às 21:00 (o agente não podia confirmar, por lhe estar proibido ler o `.env`).
+
+**Ação nova para o utilizador:** F05 introduziu duas variáveis, já em `.env.example`, ambas
+opcionais com valores por omissão seguros. Para as personalizar, acrescentar ao `.env`:
+`API_FOOTBALL_DAILY_BUDGET=100` e `API_FOOTBALL_SEASON=`.
+
+Commit `d4c8c0c`.
