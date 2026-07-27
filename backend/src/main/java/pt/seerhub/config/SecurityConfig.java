@@ -70,6 +70,10 @@ public class SecurityConfig {
                         // component-scan em qualquer contexto *IT porque o classpath de teste
                         // fica dentro do pacote base pt.seerhub. Nunca existe fora de testes.
                         .requestMatchers("/__test__/**").permitAll()
+                        // F02: listagem pública e leitura de uma comunidade por slug (R2).
+                        // Só GET — POST /api/communities e PUT /api/communities/{slug}
+                        // continuam a exigir autenticação por anyRequest().authenticated().
+                        .requestMatchers(HttpMethod.GET, "/api/communities", "/api/communities/*").permitAll()
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e

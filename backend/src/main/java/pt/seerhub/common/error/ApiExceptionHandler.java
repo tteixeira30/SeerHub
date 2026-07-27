@@ -8,6 +8,7 @@ import org.slf4j.MDC;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -32,6 +33,9 @@ public class ApiExceptionHandler {
 
     private static final String MENSAGEM_ERRO_INESPERADO = "Ocorreu um erro inesperado.";
 
+    /** F02, D-12: corpo de pedido ilegível (JSON inválido, ou um número fracionário onde se espera inteiro). */
+    public static final String MENSAGEM_PEDIDO_MAL_FORMADO = "O corpo do pedido é inválido.";
+
     @ExceptionHandler(ApiException.class)
     public ProblemDetail tratarApiException(ApiException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(ex.getStatus(), ex.getDetail());
@@ -48,6 +52,20 @@ public class ApiExceptionHandler {
                 .map(this::formatarErroDeCampo)
                 .toList();
         problemDetail.setProperty("erros", erros);
+        adicionarCorrelationId(problemDetail);
+        return problemDetail;
+    }
+
+    /**
+     * F02, D-12: sem este handler, um corpo ilegível (JSON malformado, ou
+     * um número fracionário como {@code 12.50} onde o DTO espera um
+     * {@code Integer}) caía no handler genérico de {@code Exception} e
+     * devolvia 500. Aditivo — os três handlers de F00/F01 ficam intocados.
+     */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ProblemDetail tratarCorpoIlegivel(HttpMessageNotReadableException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
+                HttpStatus.BAD_REQUEST, MENSAGEM_PEDIDO_MAL_FORMADO);
         adicionarCorrelationId(problemDetail);
         return problemDetail;
     }

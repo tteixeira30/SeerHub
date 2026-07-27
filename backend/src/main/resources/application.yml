@@ -17,6 +17,8 @@ spring:
     baseline-on-migrate: false
   jackson:
     default-property-inclusion: non_null
+    deserialization:
+      accept-float-as-int: false   # sem isto, "12.50" seria truncado em silêncio para 12 (F02, D-12)
   threads:
     virtual:
       enabled: true

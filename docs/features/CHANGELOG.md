@@ -140,3 +140,71 @@ negrito.
 ## 2026-07-27 17:48 — F01 Contas e autenticação · IMPLEMENTING
 
 Implementador lançado (Sonnet 5) a partir de `plan.md`. Baseline a preservar: 26 testes.
+
+## 2026-07-27 18:25 — F01 Contas e autenticação · DONE
+
+53 ficheiros commitados. **62 testes, 0 falhas** — 50 JUnit + 12 Vitest, corridos pelo
+orquestrador. Baseline sobe de 26 para 62, sem uma única regressão nos testes de F00.
+
+Os 28 critérios da tabela do plano têm teste com o nome exato especificado, confirmado um a
+um (o de 2b tem acento no nome e escapou ao primeiro varrimento — existe). Lista "não
+tocar" respeitada: spec, F00, `.claude`, `V1` e `V2` intactos; `V3__refresh_tokens.sql`
+acrescentada corretamente como migração nova.
+
+**Nova baseline: 62 a passar, 0 a falhar.**
+
+Desvios face ao plano, todos no handoff:
+1. **A aritmética do próprio plano estava errada** — anunciava 46 testes totais, mas a
+   decomposição por ficheiro somava 28 novos. O implementador seguiu as linhas nomeadas, que
+   é o que vale: 22 + 28 = 50.
+2. **`token_hash` mapeado como `VARCHAR(64)` e não `CHAR(64)`** — `ddl-auto: validate`
+   rejeitava. É exatamente o contrato de F00 a funcionar como pretendido.
+3. **`@Transactional(noRollbackFor = ApiException.class)` em `AuthService.refresh()`** — sem
+   isto, a revogação da família de tokens ao detetar reutilização era silenciosamente
+   revertida pelo rollback. Era um buraco de segurança real, não um detalhe: um token roubado
+   e reutilizado devolvia 401 mas não revogava nada.
+4. **`trim()` no construtor compacto de `RegisterRequest`/`LoginRequest`** — a Bean Validation
+   corre antes da normalização do serviço.
+5. **Regra `/__test__/**` com `permitAll()` acrescentada à cadeia de segurança de produção**,
+   para manter verde o `ApiExceptionHandlerIT` de F00. Ver dívidas.
+
+Dívidas deixadas:
+- **`/__test__/**` permitAll em `SecurityConfig.java:72`** — a rota só existe numa
+  `@TestConfiguration` dentro de `ApiExceptionHandlerIT`, por isso em produção é um
+  `permitAll` sobre um caminho inexistente: inofensivo hoje, mas é configuração de teste a
+  vazar para a cadeia de produção. Correção mais limpa: declarar a regra em escopo de teste
+  ou mover o endpoint de teste para uma rota pública já existente. Dono: quem tocar a seguir
+  em `SecurityConfig` (F04, que reescreve autorização).
+- `npm audit` continua com 7 vulnerabilidades dev-only, herdadas de F00.
+- **Ação do utilizador antes de F05:** renomear `API_KEY` para `API_FOOTBALL_KEY` no `.env`.
+  Continua por fazer — o implementador não leu nem tocou o ficheiro, como mandado.
+
+Commit `0a7f35d`.
+
+## 2026-07-27 18:26 — F02 Criação e gestão de comunidades · PLANNING
+
+Planeador lançado (Opus 5), sem deliberação lisa-loop: F02 é CRUD sobre uma tabela que já
+existe no baseline, com autorização já resolvida por F01. Não há decisão arquitetural
+contestada que justifique o orçamento — o time gate é para comprar profundidade onde errar
+é caro, não um imposto por feature.
+
+## 2026-07-27 18:40 — F02 Criação e gestão de comunidades · PLANNED
+
+`docs/features/F02-comunidades/plan.md` — 691 linhas, 9 secções.
+
+O plano tem uma secção 2.1 dedicada só à **fronteira F02/F03 sobre `community_memberships`**:
+F02 cria a linha `OWNER` do criador e nunca faz `UPDATE` a linhas de membership; toda a
+transição de `status` e todo o uso de `expires_at` ficam para F03. Sem isto, F02 teria
+decidido o desenho de F03 por acidente.
+
+Decisões: avatar e banner só como URLs, upload adiado com dono nomeado (F15); um ponto de
+verificação público `CommunityAccessRules.exigirQueAceitaNovasSubscricoes(...)` que F03 vai
+invocar, testado já em F02.
+
+A dívida `/__test__/**` foi reencaminhada em vez de perdida — o plano atribui-a a F15,
+enquanto o meu registo de F01 apontava F04. Fica anotado; o dono efetivo é quem primeiro
+reescrever `SecurityConfig` a sério.
+
+## 2026-07-27 18:41 — F02 Criação e gestão de comunidades · IMPLEMENTING
+
+Implementador lançado (Sonnet 5). Baseline a preservar: 62 testes.
