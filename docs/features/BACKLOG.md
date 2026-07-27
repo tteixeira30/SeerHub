@@ -2,8 +2,8 @@
 
 **Spec:** `docs/specs/seerhub.md`
 **Run iniciado:** 2026-07-27
-**Comando de testes:** a definir por F00 — previsto `./mvnw test` (backend) e `npm test` (frontend)
-**Baseline:** 0 testes — repositório sem código
+**Comando de testes:** `./mvnw test` (raiz, corre `*Test` e `*IT`) e `cd frontend && npm test`
+**Baseline:** 26 testes a passar, 0 a falhar (22 JUnit + 4 Vitest), desde F00
 
 **Ambiente verificado:** Java 21.0.7 · Maven 3.9.10 · Node 22.16.0 · Docker 28.1.1 (a correr, Testcontainers viável)
 
@@ -13,8 +13,8 @@
 
 | ID | Feature | Requisitos | Depende de | Milestone | Estado | Atualizado |
 | --- | --- | --- | --- | --- | --- | --- |
-| F00 | Fundações e esqueleto | R15 (exceto seed) | — | M1 | IMPLEMENTING | 2026-07-27 |
-| F01 | Contas e autenticação | R1 | F00 | M1 | TODO | — |
+| F00 | Fundações e esqueleto | R15 (exceto seed) | — | M1 | DONE | 2026-07-27 |
+| F01 | Contas e autenticação | R1 | F00 | M1 | IMPLEMENTING | 2026-07-27 |
 | F02 | Criação e gestão de comunidades | R2 | F01 | M1 | TODO | — |
 | F03 | Subscrições e controlo de acesso | R3 | F02 | M1 | TODO | — |
 | F04 | Papéis e permissões | R4 | F03 | M1 | TODO | — |

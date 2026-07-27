@@ -36,7 +36,7 @@ management:
         include: health
   endpoint:
     health:
-      show-details: always      # necessário para expor o componente "db"
+      show-details: when-authorized   # dívida de F00 fechada por F01: só autenticados veem "components"
       probes:
         enabled: true
 
