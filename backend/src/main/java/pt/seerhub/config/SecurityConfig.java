@@ -79,6 +79,9 @@ public class SecurityConfig {
                         // Só GET — POST /api/communities e PUT /api/communities/{slug}
                         // continuam a exigir autenticação por anyRequest().authenticated().
                         .requestMatchers(HttpMethod.GET, "/api/communities", "/api/communities/*").permitAll()
+                        // F05: os emblemas aparecem no perfil público de uma comunidade (R11).
+                        .requestMatchers(HttpMethod.GET, "/api/football/crests/**").permitAll()
+                        .requestMatchers("/actuator/metrics/**").hasRole("ADMIN")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
                         .anyRequest().authenticated())
                 .exceptionHandling(e -> e

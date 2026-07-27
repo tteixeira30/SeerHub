@@ -10,6 +10,19 @@ seerhub:
     # expiração invocam expirarMembershipsVencidas() diretamente, nunca
     # esperam pelo relógio.
     expiry-cron: "-"
+  football:
+    # F05: perfil de teste usa sempre dados fixos, nunca o fornecedor real
+    # (7c). Os crons ficam desligados ("-" = Scheduled.CRON_DISABLED) — os
+    # testes invocam sincronizarCatalogo()/sincronizarResultadosPendentes()
+    # diretamente, nunca esperam pelo relógio.
+    provider: fake
+    catalog-cron: "-"
+    result-cron: "-"
+    daily-budget: 100
+    catalog-reserve: 20
+    season: 2026
+  uploads:
+    dir: ${java.io.tmpdir}/seerhub-test-uploads
 
 logging:
   structured:

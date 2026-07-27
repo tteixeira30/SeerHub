@@ -397,3 +397,33 @@ vinha do commit inicial da spec.
 
 Ação do utilizador confirmada: `.env` já tem `API_FOOTBALL_KEY` e continua ignorado pelo git.
 A dívida herdada de F00 está fechada. **F05 deixa de estar bloqueada.**
+
+## 2026-07-27 21:08 — F05 Sincronização de dados de futebol · PLANNING
+
+Planeador lançado (Opus 5), com deliberação lisa-loop de 2 minutos (teto): F05 introduz o
+primeiro subsistema com dependência externa, e o orçamento de quota é uma restrição de
+desenho e não um detalhe de configuração. Primeira feature do M2.
+
+## 2026-07-27 21:25 — F05 Sincronização de dados de futebol · PLANNED
+
+`docs/features/F05-sincronizacao-futebol/plan.md` — 631 linhas, 9 secções.
+
+Duas decisões que o plano justifica bem:
+1. **O contador de orçamento vive em base de dados** (`api_call_budget`, migração `V4`), não
+   em memória, com reserva atómica `INSERT ... ON CONFLICT DO UPDATE ... WHERE` que devolve 1
+   linha se reservou e 0 se o teto foi atingido. Motivo concreto: `docker-compose.yml` declara
+   `restart: unless-stopped`, e o cenário em que o reinício é mais provável — fornecedor em
+   baixo, exceções, reinício — é exatamente aquele em que a garantia importa. Três reinícios
+   num dia triplicariam o consumo real com um contador em memória.
+2. **O resultado lido do fornecedor é `score.fulltime`, não `goals`.** O campo `goals` inclui
+   prolongamento; os mercados 1X2, dupla hipótese, mais/menos e ambas marcam resolvem-se ao
+   tempo regulamentar. Usar `goals` faria F08 resolver mal todos os jogos de taça com
+   prolongamento — um erro que só apareceria em produção, num jogo a eliminar, meses depois.
+
+Fronteira declarada: **F05 nunca toca em `tip_selections` nem em `tips`** — lê-as para saber
+se há procura, e escreve apenas em `Fixture`. A resolução é inteiramente de F08, que consome a
+superfície definida na secção 2.5 do plano.
+
+## 2026-07-27 21:26 — F05 Sincronização de dados de futebol · IMPLEMENTING
+
+Implementador lançado (Sonnet 5). Baseline a preservar: 226 testes.

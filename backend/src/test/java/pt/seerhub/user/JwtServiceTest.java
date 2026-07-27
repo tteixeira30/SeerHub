@@ -79,7 +79,7 @@ class JwtServiceTest {
     private static SeerHubProperties propriedades(String segredo, Duration accessTtl) {
         return new SeerHubProperties(
                 new SeerHubProperties.Security(segredo, accessTtl, Duration.ofDays(30)),
-                new SeerHubProperties.Football(null, null),
+                new SeerHubProperties.Football(null, null, null, null, null, null, null, null, null, null, null, null, null, null),
                 new SeerHubProperties.Uploads(null));
     }
 }

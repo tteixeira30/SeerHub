@@ -35,7 +35,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health
+        include: health,metrics
   endpoint:
     health:
       show-details: when-authorized   # dívida de F00 fechada por F01: só autenticados veem "components"
@@ -57,5 +57,37 @@ seerhub:
   football:
     api-key: ${API_FOOTBALL_KEY:}             # vazio é válido: F05 valida quando sincroniza
     base-url: ${API_FOOTBALL_BASE_URL:https://v3.football.api-sports.io}
+    provider: api-football                    # "fake" só no perfil de teste
+    daily-budget: ${API_FOOTBALL_DAILY_BUDGET:100}
+    catalog-reserve: 20                       # unidades que os resultados nunca gastam
+    season: ${API_FOOTBALL_SEASON:}           # vazio = derivada do relógio
+    catalog-cron: "0 7 */12 * * *"            # 00:07 e 12:07 UTC — 12h de periodicidade
+    catalog-horizon: P7D
+    result-cron: "0 */15 * * * *"
+    result-delay: PT2H                        # só olha para jogos começados há 2h+
+    result-window: P7D                        # e ainda não há mais de 7 dias
+    min-result-interval: PT30M                # não repete o mesmo grupo antes disto
+    max-groups-per-run: 4
+    request-timeout: PT10S
+    crest-downloads-per-run: 50
+    leagues:
+      - provider-id: 94
+        name: Primeira Liga
+        country: Portugal
+      - provider-id: 39
+        name: Premier League
+        country: England
+      - provider-id: 140
+        name: La Liga
+        country: Spain
+      - provider-id: 135
+        name: Serie A
+        country: Italy
+      - provider-id: 78
+        name: Bundesliga
+        country: Germany
+      - provider-id: 61
+        name: Ligue 1
+        country: France
   uploads:
     dir: ${UPLOADS_DIR:./uploads}
