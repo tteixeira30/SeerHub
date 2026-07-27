@@ -9,6 +9,7 @@ import org.slf4j.MDC;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -35,6 +36,9 @@ public class ApiExceptionHandler {
 
     /** F02, D-12: corpo de pedido ilegível (JSON inválido, ou um número fracionário onde se espera inteiro). */
     public static final String MENSAGEM_PEDIDO_MAL_FORMADO = "O corpo do pedido é inválido.";
+
+    /** F04, D-11: defesa em profundidade — ver Javadoc de {@code SecurityConfig} sobre o porquê de não usar {@code @PreAuthorize}. */
+    public static final String MENSAGEM_ACESSO_NEGADO = "Não tem permissão para esta ação.";
 
     @ExceptionHandler(ApiException.class)
     public ProblemDetail tratarApiException(ApiException ex) {
@@ -66,6 +70,21 @@ public class ApiExceptionHandler {
     public ProblemDetail tratarCorpoIlegivel(HttpMessageNotReadableException ex) {
         ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(
                 HttpStatus.BAD_REQUEST, MENSAGEM_PEDIDO_MAL_FORMADO);
+        adicionarCorrelationId(problemDetail);
+        return problemDetail;
+    }
+
+    /**
+     * F04, D-11: rede de segurança para uma {@code AccessDeniedException} que
+     * a method security do Spring Security lançasse dentro da invocação de um
+     * controlador (ex.: um {@code @PreAuthorize} futuro) — sem este handler,
+     * cairia no {@code @ExceptionHandler(Exception.class)} genérico e devolvia
+     * {@code 500} em vez de {@code 403}. R4 em si não usa este mecanismo
+     * (ver Javadoc de {@code SecurityConfig}); isto é defesa em profundidade.
+     */
+    @ExceptionHandler(AccessDeniedException.class)
+    public ProblemDetail tratarAcessoNegado(AccessDeniedException ex) {
+        ProblemDetail problemDetail = ProblemDetail.forStatusAndDetail(HttpStatus.FORBIDDEN, MENSAGEM_ACESSO_NEGADO);
         adicionarCorrelationId(problemDetail);
         return problemDetail;
     }

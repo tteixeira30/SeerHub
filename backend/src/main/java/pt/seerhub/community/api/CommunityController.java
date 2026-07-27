@@ -15,6 +15,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import pt.seerhub.community.domain.CommunityPermission;
+import pt.seerhub.community.security.RequiresCommunityPermission;
 import pt.seerhub.community.service.CommunityService;
 import pt.seerhub.user.security.AuthenticatedUser;
 
@@ -45,8 +47,9 @@ public class CommunityController {
     }
 
     @GetMapping("/api/communities")
-    public List<CommunityResponse> listar() {
-        return communityService.listarAtivas();
+    public List<CommunityResponse> listar(@AuthenticationPrincipal AuthenticatedUser autenticado) {
+        Long viewerId = autenticado == null ? null : autenticado.id();
+        return communityService.listarAtivas(viewerId);
     }
 
     @GetMapping("/api/communities/{slug}")
@@ -58,6 +61,7 @@ public class CommunityController {
     }
 
     @PutMapping("/api/communities/{slug}")
+    @RequiresCommunityPermission(CommunityPermission.EDIT_COMMUNITY)
     public CommunityResponse editar(
             @PathVariable String slug,
             @Valid @RequestBody UpdateCommunityRequest request,

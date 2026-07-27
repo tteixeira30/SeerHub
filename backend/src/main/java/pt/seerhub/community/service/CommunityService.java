@@ -2,6 +2,7 @@ package pt.seerhub.community.service;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
@@ -14,6 +15,7 @@ import pt.seerhub.community.api.CreateCommunityRequest;
 import pt.seerhub.community.api.UpdateCommunityRequest;
 import pt.seerhub.community.domain.Community;
 import pt.seerhub.community.domain.CommunityMembership;
+import pt.seerhub.community.domain.CommunityPermission;
 import pt.seerhub.community.domain.CommunityStatus;
 import pt.seerhub.community.repo.CommunityMembershipRepository;
 import pt.seerhub.community.repo.CommunityRepository;
@@ -38,7 +40,8 @@ public class CommunityService {
     public static final String MENSAGEM_LIMITE_ATINGIDO =
             "Atingiu o limite de 3 comunidades ativas. Suspenda ou aguarde antes de criar outra.";
     public static final String MENSAGEM_COMUNIDADE_NAO_ENCONTRADA = "Comunidade não encontrada.";
-    public static final String MENSAGEM_SEM_PERMISSAO = "Não tem permissão para editar esta comunidade.";
+    /** F04: derivada da enum, valor literal idêntico ao anterior — {@code CommunityEditIT} não precisa de mudar. */
+    public static final String MENSAGEM_SEM_PERMISSAO = CommunityPermission.EDIT_COMMUNITY.mensagemDeRecusa();
     public static final String MENSAGEM_SLUG_EM_CONFLITO =
             "Não foi possível criar a comunidade. Tente novamente.";
     private static final String MENSAGEM_AUTENTICACAO_NECESSARIA = "Autenticação necessária.";
@@ -46,16 +49,19 @@ public class CommunityService {
     private final CommunityRepository communityRepository;
     private final CommunityMembershipRepository communityMembershipRepository;
     private final UserRepository userRepository;
+    private final CommunityPermissionService communityPermissionService;
     private final Clock clock;
 
     public CommunityService(
             CommunityRepository communityRepository,
             CommunityMembershipRepository communityMembershipRepository,
             UserRepository userRepository,
+            CommunityPermissionService communityPermissionService,
             Clock clock) {
         this.communityRepository = communityRepository;
         this.communityMembershipRepository = communityMembershipRepository;
         this.userRepository = userRepository;
+        this.communityPermissionService = communityPermissionService;
         this.clock = clock;
     }
 
@@ -97,7 +103,8 @@ public class CommunityService {
         CommunityMembership membership = CommunityMembership.deDono(community, owner, clock);
         communityMembershipRepository.saveAndFlush(membership);
 
-        return CommunityResponse.de(community, owner.getId());
+        CommunityAuthorization authorization = communityPermissionService.autorizacaoDe(community, owner.getId());
+        return CommunityResponse.de(community, authorization);
     }
 
     /**
@@ -108,7 +115,11 @@ public class CommunityService {
     @Transactional(readOnly = true)
     public CommunityResponse obterParaLeitura(String slug, Long viewerIdOuNull) {
         Community community = obterEntidadeParaLeitura(slug, viewerIdOuNull);
-        return CommunityResponse.de(community, viewerIdOuNull);
+        if (viewerIdOuNull == null) {
+            return CommunityResponse.de(community, (Long) null);
+        }
+        CommunityAuthorization authorization = communityPermissionService.autorizacaoDe(community, viewerIdOuNull);
+        return CommunityResponse.de(community, authorization);
     }
 
     /**
@@ -135,19 +146,23 @@ public class CommunityService {
         return community;
     }
 
-    /** Listagem pública (D-6): só {@code ACTIVE}. */
+    /** Listagem pública (D-6): só {@code ACTIVE}. {@code viewerIdOuNull} preenche o papel efetivo de cada linha (F04). */
     @Transactional(readOnly = true)
-    public List<CommunityResponse> listarAtivas() {
-        return communityRepository.findTop100ByStatusOrderByCreatedAtDesc(CommunityStatus.ACTIVE).stream()
-                .map(community -> CommunityResponse.de(community, null))
+    public List<CommunityResponse> listarAtivas(Long viewerIdOuNull) {
+        List<Community> comunidades = communityRepository.findTop100ByStatusOrderByCreatedAtDesc(CommunityStatus.ACTIVE);
+        Map<Long, CommunityAuthorization> autorizacoes = communityPermissionService.autorizacoesDe(comunidades, viewerIdOuNull);
+        return comunidades.stream()
+                .map(community -> CommunityResponse.de(community, autorizacoes.get(community.getId())))
                 .toList();
     }
 
     /** {@code GET /api/me/communities}: as comunidades de que o utilizador é dono (inclui suspensas). */
     @Transactional(readOnly = true)
     public List<CommunityResponse> listarDoDono(Long ownerId) {
-        return communityRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId).stream()
-                .map(community -> CommunityResponse.de(community, ownerId))
+        List<Community> comunidades = communityRepository.findByOwnerIdOrderByCreatedAtDesc(ownerId);
+        Map<Long, CommunityAuthorization> autorizacoes = communityPermissionService.autorizacoesDe(comunidades, ownerId);
+        return comunidades.stream()
+                .map(community -> CommunityResponse.de(community, autorizacoes.get(community.getId())))
                 .toList();
     }
 
@@ -162,7 +177,8 @@ public class CommunityService {
         Community community = communityRepository.findBySlug(slug)
                 .orElseThrow(this::comunidadeNaoEncontrada);
 
-        exigirDono(community, autenticado.id());
+        CommunityAuthorization authorization =
+                communityPermissionService.exigir(community, autenticado.id(), CommunityPermission.EDIT_COMMUNITY);
 
         community.setName(request.name());
         community.setDescription(request.description());
@@ -172,14 +188,7 @@ public class CommunityService {
 
         communityRepository.save(community);
 
-        return CommunityResponse.de(community, autenticado.id());
-    }
-
-    /** {@code 403} se {@code userId} não for o dono da comunidade. Nunca escreve em membership. */
-    public void exigirDono(Community community, Long userId) {
-        if (!community.getOwner().getId().equals(userId)) {
-            throw new ApiException(HttpStatus.FORBIDDEN, MENSAGEM_SEM_PERMISSAO);
-        }
+        return CommunityResponse.de(community, authorization);
     }
 
     private User resolverUtilizadorAutenticado(AuthenticatedUser autenticado) {

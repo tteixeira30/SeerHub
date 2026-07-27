@@ -28,6 +28,9 @@ public interface CommunityMembershipRepository extends JpaRepository<CommunityMe
     /** Todas as linhas do utilizador, para {@code CommunityAccessService.comunidadesComAcessoPremium} (D-16). */
     List<CommunityMembership> findByUserId(Long userId);
 
+    /** F04: a lista de membros de uma comunidade, para {@code ModerationService.listarMembros}, mais antigos primeiro. */
+    List<CommunityMembership> findByCommunityIdOrderByJoinedAtAsc(Long communityId);
+
     /** {@code GET /api/me/subscriptions} (D-12): só as linhas MEMBER, mais recentes primeiro. */
     List<CommunityMembership> findByUserIdAndRoleOrderByJoinedAtDesc(Long userId, MembershipRole role);
 

@@ -3,6 +3,7 @@ import { Route, Routes } from "react-router-dom";
 import { RequireAuth } from "@/components/RequireAuth";
 import { AuthProvider } from "@/lib/auth";
 import { AccountPage } from "@/pages/AccountPage";
+import { CommunityModeratorsPage } from "@/pages/CommunityModeratorsPage";
 import { CommunityPage } from "@/pages/CommunityPage";
 import { CommunitySettingsPage } from "@/pages/CommunitySettingsPage";
 import { CreateCommunityPage } from "@/pages/CreateCommunityPage";
@@ -56,6 +57,14 @@ export function App() {
           element={
             <RequireAuth>
               <MySubscriptionsPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/comunidades/:slug/moderadores"
+          element={
+            <RequireAuth>
+              <CommunityModeratorsPage />
             </RequireAuth>
           }
         />

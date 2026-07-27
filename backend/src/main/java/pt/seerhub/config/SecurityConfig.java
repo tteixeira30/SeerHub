@@ -38,8 +38,17 @@ import pt.seerhub.user.service.JwtService;
  * autenticação.
  *
  * <p>{@code @EnableMethodSecurity} liga {@code @PreAuthorize} para F01 e
- * para as features seguintes (D-8 do plano de F01) — o
- * {@code PermissionEvaluator} por comunidade é de F04, não desta feature.
+ * para as features seguintes (D-8 do plano de F01). A autorização por
+ * comunidade (R4) não usa {@code @PreAuthorize}/{@code PermissionEvaluator}
+ * deliberadamente — ver {@code pt.seerhub.community.service.CommunityPermissionService}
+ * e {@code pt.seerhub.community.security.CommunityPermissionInterceptor}
+ * (F04, §2.3 do seu plano): uma {@code AuthorizationDeniedException} lançada
+ * pela method security dentro da invocação do controlador seria resolvida
+ * pelos {@code HandlerExceptionResolver} do {@code DispatcherServlet} e cairia
+ * no handler genérico de {@code ApiExceptionHandler}, devolvendo {@code 500}
+ * em vez de {@code 403}. F04 usa {@code ApiException(403, ...)}, o mecanismo
+ * já provado por F02/F03, e acrescenta {@code @ExceptionHandler(AccessDeniedException.class)}
+ * como defesa em profundidade para qualquer {@code @PreAuthorize} futuro.
  *
  * <p><b>Para F02 e seguintes:</b> para proteger um endpoint novo, basta
  * chegar a ele autenticado (a regra {@code anyRequest().authenticated()}
@@ -66,10 +75,6 @@ public class SecurityConfig {
                         .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/api/auth/register", "/api/auth/login",
                                 "/api/auth/refresh").permitAll()
-                        // Controlador de teste de ApiExceptionHandlerIT (F00), detetado pelo
-                        // component-scan em qualquer contexto *IT porque o classpath de teste
-                        // fica dentro do pacote base pt.seerhub. Nunca existe fora de testes.
-                        .requestMatchers("/__test__/**").permitAll()
                         // F02: listagem pública e leitura de uma comunidade por slug (R2).
                         // Só GET — POST /api/communities e PUT /api/communities/{slug}
                         // continuam a exigir autenticação por anyRequest().authenticated().

@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 import { ApiError } from "@/lib/api";
 import { centimosParaEuros, obterComunidade } from "@/lib/communities";
+import { pode } from "@/lib/permissions";
 import { cancelarSubscricao, obterAcesso, obterAreaDeMembro, subscrever } from "@/lib/subscriptions";
 import { ResubscribeNotice } from "@/components/ResubscribeNotice";
 
@@ -95,6 +96,12 @@ export function CommunityPage() {
       {erroAcao && <p role="alert">{erroAcao}</p>}
 
       {acesso && acesso.manager && <p>É dono ou moderador desta comunidade.</p>}
+
+      {acesso && slug && pode(acesso.permissions, "MANAGE_MODERATORS") && (
+        <p>
+          <Link to={`/comunidades/${slug}/moderadores`}>Gerir moderadores</Link>
+        </p>
+      )}
 
       {acesso && !acesso.manager && acesso.premium && acesso.status === "ACTIVE" && (
         <div>

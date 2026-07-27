@@ -131,6 +131,21 @@ public class CommunityMembership {
         this.expiresAt = novoExpiresAt;
     }
 
+    /**
+     * Promove a {@code MODERATOR} (R4, F04, D-3): só o papel muda —
+     * {@link #status} e {@link #expiresAt} ficam intactos, o que faz um
+     * moderador nomeado sobre uma linha já vencida continuar sem acesso
+     * até renovar (critério 1d).
+     */
+    public void promoverAModerador() {
+        this.role = MembershipRole.MODERATOR;
+    }
+
+    /** Despromove para {@code MEMBER} (R4, F04, D-3): devolve o utilizador ao estado real da subscrição subjacente. */
+    public void despromoverParaMembro() {
+        this.role = MembershipRole.MEMBER;
+    }
+
     @PrePersist
     void prePersist() {
         Clock efetivo = clock != null ? clock : Clock.systemUTC();

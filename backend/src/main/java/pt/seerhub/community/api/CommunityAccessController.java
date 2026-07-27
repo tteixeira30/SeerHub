@@ -8,6 +8,8 @@ import org.springframework.web.bind.annotation.RestController;
 import pt.seerhub.community.domain.Community;
 import pt.seerhub.community.service.CommunityAccess;
 import pt.seerhub.community.service.CommunityAccessService;
+import pt.seerhub.community.service.CommunityAuthorization;
+import pt.seerhub.community.service.CommunityPermissionService;
 import pt.seerhub.community.service.CommunityService;
 import pt.seerhub.user.security.AuthenticatedUser;
 
@@ -24,10 +26,15 @@ public class CommunityAccessController {
 
     private final CommunityService communityService;
     private final CommunityAccessService communityAccessService;
+    private final CommunityPermissionService communityPermissionService;
 
-    public CommunityAccessController(CommunityService communityService, CommunityAccessService communityAccessService) {
+    public CommunityAccessController(
+            CommunityService communityService,
+            CommunityAccessService communityAccessService,
+            CommunityPermissionService communityPermissionService) {
         this.communityService = communityService;
         this.communityAccessService = communityAccessService;
+        this.communityPermissionService = communityPermissionService;
     }
 
     @GetMapping("/api/communities/{slug}/access")
@@ -37,7 +44,8 @@ public class CommunityAccessController {
         Long viewerId = autenticado == null ? null : autenticado.id();
         Community community = communityService.obterEntidadeParaLeitura(slug, viewerId);
         CommunityAccess acesso = communityAccessService.acessoDe(community, viewerId);
-        return CommunityAccessResponse.de(acesso, community);
+        CommunityAuthorization autorizacao = communityPermissionService.autorizacaoDe(community, viewerId);
+        return CommunityAccessResponse.de(acesso, community, autorizacao);
     }
 
     @GetMapping("/api/communities/{slug}/member-area")

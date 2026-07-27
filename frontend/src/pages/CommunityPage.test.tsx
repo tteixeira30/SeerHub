@@ -79,13 +79,14 @@ function instalarFetchMock(estado: { subscrito: boolean; status: "ACTIVE" | "CAN
           return jsonResponse({
             communityId: 1, slug: SLUG, premium: false, manager: false, role: null,
             status: estado.status, joinedAt: null, expiresAt: estado.expiresAt,
-            priceMonthlyCents: 999, currency: "EUR",
+            priceMonthlyCents: 999, currency: "EUR", permissions: [],
           });
         }
         return jsonResponse({
           communityId: 1, slug: SLUG, premium: estado.status !== "EXPIRED", manager: false, role: "MEMBER",
           status: estado.status, joinedAt: "2026-07-27T00:00:00Z", expiresAt: estado.expiresAt,
           priceMonthlyCents: 999, currency: "EUR",
+          permissions: estado.status !== "EXPIRED" ? ["READ_TIPS", "READ_CHAT", "WRITE_CHAT"] : [],
         });
       }
 
@@ -177,5 +178,46 @@ describe("CommunityPage", () => {
       expect(screen.getByText("Bem-vindo à área de membro.")).toBeInTheDocument();
     });
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+  });
+
+  /**
+   * FE4 (F04): o link "Gerir moderadores" só aparece quando o servidor traz
+   * `MANAGE_MODERATORS` em `/access` — nunca uma decisão do cliente.
+   */
+  it("linkDeGerirModeradoresSoApareceComAPermissaoDoServidor", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) => {
+        const url = String(input);
+
+        if (url.endsWith("/access")) {
+          return jsonResponse({
+            communityId: 1, slug: SLUG, premium: true, manager: true, role: "OWNER",
+            status: "ACTIVE", joinedAt: "2026-01-01T00:00:00Z", expiresAt: null,
+            priceMonthlyCents: 999, currency: "EUR",
+            permissions: ["MANAGE_MODERATORS", "EDIT_COMMUNITY", "DELETE_COMMUNITY"],
+          });
+        }
+
+        if (url.endsWith("/member-area")) {
+          return jsonResponse({
+            communityId: 1, slug: SLUG, name: COMUNIDADE.name, role: "OWNER",
+            status: "ACTIVE", joinedAt: "2026-01-01T00:00:00Z", expiresAt: null,
+          });
+        }
+
+        if (url.endsWith(`/api/communities/${SLUG}`)) {
+          return jsonResponse(COMUNIDADE);
+        }
+
+        throw new Error(`URL não esperado no mock de fetch: ${url}`);
+      })
+    );
+
+    renderizar();
+
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: "Gerir moderadores" })).toBeInTheDocument();
+    });
   });
 });

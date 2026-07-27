@@ -267,3 +267,57 @@ compara a linha coluna a coluna continua a ser o guarda dessa fronteira.
 ## 2026-07-27 19:21 — F03 Subscrições e controlo de acesso · IMPLEMENTING
 
 Implementador lançado (Sonnet 5). Baseline a preservar: 101 testes.
+
+## 2026-07-27 19:50 — F03 Subscrições e controlo de acesso · DONE
+
+32 ficheiros commitados. **162 testes, 0 falhas** — 140 JUnit + 22 Vitest, corridos pelo
+orquestrador. Baseline sobe de 101 para 162, sem regressões.
+
+Verificado por mim para além dos números: **nenhum teste em todo o backend contém
+`Thread.sleep` ou espera equivalente** — a expiração agendada é testada com `Clock.fixed` e
+invocação direta, como o plano exigia. O teste-guarda da fronteira F02/F03
+(`CommunityEditIT.alterarOPrecoNaoMexeEmNenhumaMembershipJaAtiva`) continua verde depois de
+F03 ter passado a ser dona das transições de estado.
+
+Entregue: `CommunityAccessService` como porta única de acesso premium, mais
+`MembershipAccessRules` (regras puras), `SubscriptionService` e `MembershipExpiryTask`.
+
+Desvio único: subscrever e cancelar foram implementados num só incremento de produção em vez
+dos dois passos separados do plano; os ficheiros de teste mantêm-se divididos exatamente como
+planeado.
+
+O implementador encontrou e corrigiu uma armadilha própria: um Javadoc continha a literal
+`__test__`, o que faria o comando de verificação da dívida devolver duas linhas em vez de
+uma e mascarar o estado real da dívida. Reescrito antes de terminar.
+
+Dívidas: inalteradas — `/__test__/**` permitAll isolado a uma linha, `npm audit` dev-only, e
+a renomeação `API_KEY` → `API_FOOTBALL_KEY` no `.env` (ação do utilizador, antes de F05).
+
+Commit `225a7e7`.
+
+## 2026-07-27 19:51 — F04 Papéis e permissões · PLANNING
+
+Planeador lançado (Opus 5), sem lisa-loop. Última feature do M1. F04 fecha a autorização por
+comunidade e é a feature que o R4 obriga a provar com uma matriz papel × endpoint.
+
+## 2026-07-27 20:05 — F04 Papéis e permissões · PLANNED
+
+`docs/features/F04-papeis-permissoes/plan.md` — 696 linhas, 9 secções.
+
+Autoridade única de permissões por comunidade: catálogo fechado de ações
+(`CommunityPermission`), matriz pura papel × permissão (`CommunityPermissionRules`), porta de
+serviço (`CommunityPermissionService`) e anotação `@RequiresCommunityPermission` que aplica a
+verificação na fronteira HTTP antes de o pedido chegar a código de negócio.
+
+O contrato para as features que ainda não existem está escrito como contrato e não como
+sugestão: F07, F08, F12 e F14 anotam os seus endpoints e acrescentam entradas ao catálogo, em
+vez de reinventarem a verificação. `CommunityPermissionService` **consome**
+`CommunityAccessService` de F03 — F04 nunca redefine "tem acesso premium".
+
+**A dívida `/__test__/**` é fechada aqui**, com teste próprio (`SecurityChainIT
+.caminhoInternoDeTesteDeixouDeSerPublico`) a provar que o caminho deixou de ser público. Era
+o momento certo: F04 é a feature que reescreve autorização.
+
+## 2026-07-27 20:06 — F04 Papéis e permissões · IMPLEMENTING
+
+Implementador lançado (Sonnet 5). Baseline a preservar: 162 testes. Última feature do M1.

@@ -5,6 +5,7 @@
  */
 
 import { apiFetch } from "@/lib/api";
+import type { PermissaoComunidade } from "@/lib/permissions";
 
 type Papel = "OWNER" | "MODERATOR" | "MEMBER";
 type EstadoSubscricao = "ACTIVE" | "CANCELLED" | "EXPIRED";
@@ -35,6 +36,8 @@ export interface AcessoComunidade {
   expiresAt: string | null;
   priceMonthlyCents: number;
   currency: string;
+  /** F04: o conjunto de permissões do viewer nesta comunidade. */
+  permissions: PermissaoComunidade[];
 }
 
 /** Espelha `MemberAreaResponse` — o conteúdo premium de F03 (D-10). */

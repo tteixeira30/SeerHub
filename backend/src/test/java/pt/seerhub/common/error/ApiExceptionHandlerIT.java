@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import pt.seerhub.support.AbstractIntegrationTest;
 
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -27,7 +28,7 @@ class ApiExceptionHandlerIT extends AbstractIntegrationTest {
 
     @Test
     void excecaoNaoTratadaDevolve500SemStackTraceComCorrelationId() throws Exception {
-        mockMvc.perform(get("/__test__/boom"))
+        mockMvc.perform(get("/__test__/boom").with(user("teste")))
                 .andExpect(status().isInternalServerError())
                 .andExpect(jsonPath("$.correlationId").exists())
                 .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("segredo interno"))))

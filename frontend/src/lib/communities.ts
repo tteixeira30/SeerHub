@@ -6,6 +6,7 @@
  */
 
 import { apiFetch } from "@/lib/api";
+import type { PapelComunidade, PermissaoComunidade } from "@/lib/permissions";
 
 /** Espelha `CommunityResponse` (`pt.seerhub.community.api.CommunityResponse`). */
 export interface Comunidade {
@@ -22,6 +23,10 @@ export interface Comunidade {
   ownerDisplayName: string;
   createdAt: string;
   ownedByViewer: boolean;
+  /** F04: papel efetivo do viewer (ausente para um pedido anónimo — `non_null` omite-o do JSON). */
+  viewerRole?: PapelComunidade | null;
+  /** F04: permissões do viewer nesta comunidade — vazio para visitante/anónimo. */
+  viewerPermissions?: PermissaoComunidade[];
 }
 
 export interface DadosComunidade {
