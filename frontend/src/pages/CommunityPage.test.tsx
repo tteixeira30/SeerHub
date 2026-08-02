@@ -126,7 +126,8 @@ describe("CommunityPage", () => {
     fireEvent.click(botaoSubscrever);
 
     await waitFor(() => {
-      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("2026-08-26T12:00:00.000Z");
+      // A data é mostrada como o utilizador a lê, não como o backend a envia.
+      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("26/08/2026");
     });
     expect(screen.getByRole("button", { name: "Cancelar subscrição" })).toBeInTheDocument();
     await waitFor(() => {
@@ -144,7 +145,7 @@ describe("CommunityPage", () => {
     fireEvent.click(botaoCancelar);
 
     await waitFor(() => {
-      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("Mantém acesso até 2026-08-20T12:00:00.000Z");
+      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("Mantém acesso até 20/08/2026");
     });
     // A prova de acesso: a área de membro continua acessível depois de cancelar.
     await waitFor(() => {

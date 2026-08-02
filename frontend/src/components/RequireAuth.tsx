@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 
+import { Spinner } from "@/components/ui/Spinner";
 import { useAuth } from "@/lib/auth";
 
 /**
@@ -15,7 +16,12 @@ export function RequireAuth({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   if (aCarregar) {
-    return <p>A verificar sessão...</p>;
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4">
+        <Spinner className="h-7 w-7 text-brand-400" />
+        <p className="text-sm text-ink-400">A verificar sessão...</p>
+      </div>
+    );
   }
 
   if (!autenticado) {

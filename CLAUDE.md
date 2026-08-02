@@ -52,6 +52,39 @@ planeia a seguir: `user` (F01), `community` (F02), `membership` (F03),
 - Enumerados persistidos como `VARCHAR` na base de dados, mapeados com
   `@Enumerated(EnumType.STRING)` do lado Java.
 
+## Interface (frontend)
+
+Tema escuro único, construído com Tailwind. Os tokens vivem em
+`frontend/tailwind.config.js` (escala neutra `ink-50…950`, verde de ação
+`brand-200…700`, sombras `card`/`lifted`/`brand`) e o estilo base em
+`frontend/src/index.css`. **Não se escrevem cores literais nos
+componentes** — usa-se a escala; e há uma só cor de ação (`brand`), o que
+faz o botão primário destacar-se por ser o único elemento verde do ecrã.
+
+Primitivos partilhados em `frontend/src/components/ui/`: `Button`
+(+ `ButtonLink`), `Card`, `Badge`/`StatusBadge`, `Field`/`TextAreaField`,
+`Alert`, `Avatar`, `Price`, `PageHeader`, `EmptyState`, `Skeleton`,
+`Spinner` e `Icons` (SVG inline, sempre `aria-hidden`). Uma página nova
+compõe estes blocos em vez de estilizar HTML à mão. Molduras em
+`components/layout/`: `AppLayout` (barra lateral, tudo o que exige
+sessão), `AuthLayout` (`/entrar` e `/registo`) e `Brand`.
+
+Regras que os testes já garantem, e que é preciso não partir:
+
+- O texto de um `<label>` é exatamente o rótulo visível — dicas e
+  asteriscos ficam fora dele (`Field` liga a dica por `aria-describedby`),
+  senão `getByLabelText` deixa de encontrar o campo.
+- Ícones dentro de botões e ligações são decorativos, para o nome
+  acessível continuar a ser só o texto.
+- `Alert` com tom `error` é `role="alert"`; confirmações são
+  `role="status"`. Nada mais na aplicação usa `role="alert"`.
+- Estados vindos do servidor (`ACTIVE`, `OWNER`, `UP`, ...) aparecem no
+  ecrã com o valor cru dentro de um `StatusBadge` — o componente escolhe
+  a cor, nunca traduz o texto.
+- Datas mostram-se com `formatarData` (`frontend/src/lib/format.ts`), que
+  lê o prefixo `YYYY-MM-DD` da string ISO em vez de construir um `Date` —
+  assim o dia apresentado não muda com o fuso do browser.
+
 ## Testes
 
 - `*Test` — unitário, sem contexto Spring (ou, quando testa propriedades
