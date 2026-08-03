@@ -153,6 +153,25 @@ describe("CommunityPage", () => {
     });
   });
 
+  /**
+   * Quem nunca subscreveu também leva `403` na área de membro — mas não teve
+   * subscrição nenhuma a expirar. O aviso lê o estado de `/access` (aqui
+   * `null`) e convida em vez de acusar; o botão de subscrever fica só no
+   * painel lateral, para não haver duas ações iguais no mesmo ecrã.
+   */
+  it("quemNuncaSubscreveuVeUmConviteEnaoUmAvisoDeSubscricaoExpirada", async () => {
+    const estado: { subscrito: boolean; status: "ACTIVE" | "CANCELLED" | "EXPIRED" | null; expiresAt: string | null } =
+        { subscrito: false, status: null, expiresAt: null };
+    instalarFetchMock(estado);
+
+    renderizar();
+
+    expect(await screen.findByText("Conteúdo reservado a membros.")).toBeInTheDocument();
+    expect(screen.queryByText("A sua subscrição expirou.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Subscrever de novo" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Subscrever" })).toBeInTheDocument();
+  });
+
   it("erro403NaAreaDeMembroMostraOEcraDeResubscricao", async () => {
     const estado = { subscrito: true, status: "EXPIRED" as const, expiresAt: "2026-07-01T12:00:00.000Z" };
     instalarFetchMock(estado);

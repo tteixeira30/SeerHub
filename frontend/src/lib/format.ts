@@ -18,6 +18,38 @@ export function formatarData(iso: string | null | undefined): string {
   return `${dia}/${mes}/${ano}`;
 }
 
+/**
+ * Estados e papéis do backend em português de Portugal.
+ *
+ * As chaves são os enumerados tal como chegam na resposta
+ * (`MembershipStatus`, `MembershipRole`, `CommunityStatus`, `UserStatus`,
+ * `GlobalRole` e o estado do Actuator). Os estados descrevem sempre um
+ * nome feminino — a comunidade, a subscrição, a conta —, daí "Ativa" e
+ * não "Ativo".
+ */
+const ESTADOS: Record<string, string> = {
+  ACTIVE: "Ativa",
+  CANCELLED: "Cancelada",
+  EXPIRED: "Expirada",
+  SUSPENDED: "Suspensa",
+  OWNER: "Dono",
+  MODERATOR: "Moderador",
+  MEMBER: "Membro",
+  USER: "Utilizador",
+  ADMIN: "Administrador",
+  UP: "Operacional",
+  DOWN: "Indisponível",
+};
+
+/**
+ * Um valor que ainda não esteja no dicionário é mostrado como veio, em vez
+ * de desaparecer do ecrã: um enumerado novo no backend fica visível (e
+ * feio, de propósito) até alguém o traduzir aqui.
+ */
+export function traduzirEstado(valor: string): string {
+  return ESTADOS[valor] ?? valor;
+}
+
 /** Iniciais para o avatar quando não há imagem: `"Tips do Zé"` → `"TZ"`. */
 export function iniciais(nome: string): string {
   const palavras = nome

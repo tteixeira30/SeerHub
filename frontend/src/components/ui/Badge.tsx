@@ -1,6 +1,7 @@
 import type { HTMLAttributes } from "react";
 
 import { cn } from "@/lib/cn";
+import { traduzirEstado } from "@/lib/format";
 
 export type BadgeTone = "neutral" | "brand" | "success" | "warning" | "danger" | "info";
 
@@ -34,9 +35,10 @@ export function Badge({ tone = "neutral", className, children, ...props }: Badge
 }
 
 /**
- * Estados e papéis vindos do backend (`ACTIVE`, `OWNER`, `UP`, ...). O texto
- * é o valor cru do servidor — só a cor é decidida aqui; um valor
- * desconhecido cai no tom neutro em vez de desaparecer do ecrã.
+ * Estados e papéis vindos do backend (`ACTIVE`, `OWNER`, `UP`, ...). A cor
+ * é decidida aqui e o texto passa por {@link traduzirEstado}; um valor que
+ * o dicionário não conheça mantém a cor neutra e o texto cru, para uma
+ * novidade do backend aparecer no ecrã em vez de se perder.
  */
 const TOM_POR_ESTADO: Record<string, BadgeTone> = {
   ACTIVE: "success",
@@ -69,7 +71,7 @@ export function StatusBadge({
         )}
         aria-hidden="true"
       />
-      {value}
+      {traduzirEstado(value)}
     </Badge>
   );
 }

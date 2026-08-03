@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
-import { ResubscribeNotice } from "@/components/ResubscribeNotice";
+import { MemberAreaLocked } from "@/components/MemberAreaLocked";
 import { Alert } from "@/components/ui/Alert";
 import { Avatar } from "@/components/ui/Avatar";
 import { StatusBadge } from "@/components/ui/Badge";
@@ -23,7 +23,9 @@ import { cancelarSubscricao, obterAcesso, obterAreaDeMembro, subscrever } from "
  * (Subscrever / Cancelar) + área de membro (R3, critérios 1, 2 e 6). Faz
  * três pedidos deliberadamente separados — perfil, {@code /access} (estado,
  * nunca dá 403) e {@code /member-area} (a porta real, pode dar 403) — um
- * {@code 403} nesta última é o que faz aparecer {@link ResubscribeNotice}.
+ * {@code 403} nesta última é o que faz aparecer {@link MemberAreaLocked},
+ * que usa o estado trazido por {@code /access} para dizer a verdade a quem
+ * nunca subscreveu e a quem deixou a subscrição caducar.
  */
 export function CommunityPage() {
   const { slug } = useParams<{ slug: string }>();
@@ -105,6 +107,13 @@ export function CommunityPage() {
   const acesso = acessoQuery.data;
   // Subscritor a sério: nem dono nem moderador, e com acesso premium em vigor.
   const membroAtivo = acesso !== undefined && !acesso.manager && acesso.premium;
+  // Só um 403 significa "não tens acesso"; qualquer outra falha é uma avaria
+  // e não deve ser explicada ao utilizador como se fosse a subscrição dele.
+  const erroAreaDeMembro = areaDeMembroQuery.error;
+  const acessoNegado = erroAreaDeMembro instanceof ApiError && erroAreaDeMembro.status === 403;
+  // Quando o aviso já oferece o botão de voltar a subscrever, o painel
+  // lateral não repete a mesma ação.
+  const avisoOfereceSubscricao = acessoNegado && acesso?.status != null;
 
   return (
     <div className="space-y-8">
@@ -187,14 +196,19 @@ export function CommunityPage() {
             </Card>
           )}
 
-          {areaDeMembroQuery.isError && slug && (
-            <ResubscribeNotice
-              slug={slug}
-              communityName={comunidade.name}
-              priceMonthlyCents={comunidade.priceMonthlyCents}
-              currency={comunidade.currency}
-            />
-          )}
+          {areaDeMembroQuery.isError &&
+            slug &&
+            (acessoNegado ? (
+              <MemberAreaLocked
+                slug={slug}
+                communityName={comunidade.name}
+                priceMonthlyCents={comunidade.priceMonthlyCents}
+                currency={comunidade.currency}
+                estado={acesso?.status ?? null}
+              />
+            ) : (
+              <Alert>Não foi possível carregar a área de membro.</Alert>
+            ))}
         </section>
 
         {/* Coluna de estado: preço, subscrição e gestão. */}
@@ -238,7 +252,7 @@ export function CommunityPage() {
               </div>
             )}
 
-            {acesso && !acesso.manager && !acesso.premium && (
+            {acesso && !acesso.manager && !acesso.premium && !avisoOfereceSubscricao && (
               <div className="mt-5 space-y-3">
                 <Button type="button" fullWidth onClick={subscreverAgora} loading={aProcessar}>
                   Subscrever

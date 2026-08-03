@@ -78,9 +78,12 @@ Regras que os testes já garantem, e que é preciso não partir:
   acessível continuar a ser só o texto.
 - `Alert` com tom `error` é `role="alert"`; confirmações são
   `role="status"`. Nada mais na aplicação usa `role="alert"`.
-- Estados vindos do servidor (`ACTIVE`, `OWNER`, `UP`, ...) aparecem no
-  ecrã com o valor cru dentro de um `StatusBadge` — o componente escolhe
-  a cor, nunca traduz o texto.
+- Estados vindos do servidor (`ACTIVE`, `OWNER`, `UP`, ...) aparecem
+  dentro de um `StatusBadge`, que escolhe a cor e traduz o texto com
+  `traduzirEstado` (`frontend/src/lib/format.ts`). Um enumerado novo do
+  backend, ainda sem tradução, é mostrado cru — visível de propósito, para
+  se notar que falta traduzi-lo. Quem acrescenta um enumerado do lado Java
+  acrescenta a entrada no dicionário no mesmo passo.
 - Datas mostram-se com `formatarData` (`frontend/src/lib/format.ts`), que
   lê o prefixo `YYYY-MM-DD` da string ISO em vez de construir um `Date` —
   assim o dia apresentado não muda com o fuso do browser.
