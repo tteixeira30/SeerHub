@@ -1,6 +1,8 @@
 import { Route, Routes } from "react-router-dom";
 
 import { RequireAuth } from "@/components/RequireAuth";
+import { AppLayout } from "@/components/layout/AppLayout";
+import { AuthLayout } from "@/components/layout/AuthLayout";
 import { AuthProvider } from "@/lib/auth";
 import { AccountPage } from "@/pages/AccountPage";
 import { CommunityModeratorsPage } from "@/pages/CommunityModeratorsPage";
@@ -13,69 +15,39 @@ import { MyCommunitiesPage } from "@/pages/MyCommunitiesPage";
 import { MySubscriptionsPage } from "@/pages/MySubscriptionsPage";
 import { RegisterPage } from "@/pages/RegisterPage";
 
+/**
+ * Três molduras, escolhidas pela rota: a página inicial é a sua própria
+ * página, `/entrar` e `/registo` partilham o cartão centrado do
+ * {@link AuthLayout}, e tudo o que exige sessão vive dentro do
+ * {@link AppLayout} — atrás de um único {@link RequireAuth}, em vez de um
+ * por rota.
+ */
 export function App() {
   return (
     <AuthProvider>
       <Routes>
         <Route path="/" element={<HealthPage />} />
-        <Route path="/registo" element={<RegisterPage />} />
-        <Route path="/entrar" element={<LoginPage />} />
+
+        <Route element={<AuthLayout />}>
+          <Route path="/registo" element={<RegisterPage />} />
+          <Route path="/entrar" element={<LoginPage />} />
+        </Route>
+
         <Route
-          path="/conta"
           element={
             <RequireAuth>
-              <AccountPage />
+              <AppLayout />
             </RequireAuth>
           }
-        />
-        <Route
-          path="/comunidades"
-          element={
-            <RequireAuth>
-              <MyCommunitiesPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/comunidades/nova"
-          element={
-            <RequireAuth>
-              <CreateCommunityPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/comunidades/:slug/definicoes"
-          element={
-            <RequireAuth>
-              <CommunitySettingsPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/subscricoes"
-          element={
-            <RequireAuth>
-              <MySubscriptionsPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/comunidades/:slug/moderadores"
-          element={
-            <RequireAuth>
-              <CommunityModeratorsPage />
-            </RequireAuth>
-          }
-        />
-        <Route
-          path="/comunidades/:slug"
-          element={
-            <RequireAuth>
-              <CommunityPage />
-            </RequireAuth>
-          }
-        />
+        >
+          <Route path="/conta" element={<AccountPage />} />
+          <Route path="/comunidades" element={<MyCommunitiesPage />} />
+          <Route path="/comunidades/nova" element={<CreateCommunityPage />} />
+          <Route path="/comunidades/:slug/definicoes" element={<CommunitySettingsPage />} />
+          <Route path="/comunidades/:slug/moderadores" element={<CommunityModeratorsPage />} />
+          <Route path="/comunidades/:slug" element={<CommunityPage />} />
+          <Route path="/subscricoes" element={<MySubscriptionsPage />} />
+        </Route>
       </Routes>
     </AuthProvider>
   );

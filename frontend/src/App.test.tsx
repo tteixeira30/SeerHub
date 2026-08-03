@@ -46,7 +46,7 @@ describe("App", () => {
     renderizarApp();
 
     await waitFor(() => {
-      expect(screen.getByText(/UP/)).toBeInTheDocument();
+      expect(screen.getByText(/Operacional/)).toBeInTheDocument();
     });
     expect(fetch).toHaveBeenCalledWith(
       expect.stringContaining("/actuator/health"),

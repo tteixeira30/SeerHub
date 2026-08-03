@@ -1,3 +1,63 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply min-h-screen bg-ink-950 font-sans text-ink-100 antialiased;
+    /* Dois halos fixos: dão profundidade ao fundo sem custo de imagem. */
+    background-image:
+      radial-gradient(48rem 34rem at 12% -8%, rgba(16, 185, 129, 0.14), transparent 60%),
+      radial-gradient(42rem 30rem at 96% 2%, rgba(56, 189, 248, 0.08), transparent 58%);
+    background-attachment: fixed;
+  }
+
+  ::selection {
+    @apply bg-brand-400/30 text-white;
+  }
+
+  /* Anel de foco consistente em toda a aplicação (teclado, não rato). */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-400/80 ring-offset-2 ring-offset-ink-950;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full border-[3px] border-solid border-transparent bg-white/10 bg-clip-content;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-white/20;
+  }
+
+  /* Preços e datas alinham em coluna quando o tipo de letra tem numerais tabulares. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

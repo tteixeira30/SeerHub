@@ -2,7 +2,15 @@ import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 
+import { Alert } from "@/components/ui/Alert";
+import { Avatar } from "@/components/ui/Avatar";
+import { StatusBadge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
+import { Card } from "@/components/ui/Card";
+import { PageHeader } from "@/components/ui/PageHeader";
+import { Skeleton } from "@/components/ui/Skeleton";
 import { ApiError } from "@/lib/api";
+import { formatarData } from "@/lib/format";
 import { listarMembros, nomearModerador, removerModerador } from "@/lib/permissions";
 
 /**
@@ -63,12 +71,21 @@ export function CommunityModeratorsPage() {
   }
 
   if (isLoading) {
-    return <p>A carregar membros...</p>;
+    return (
+      <div className="mx-auto max-w-3xl space-y-6">
+        <Skeleton className="h-9 w-56" />
+        <Skeleton className="h-72 w-full rounded-2xl" />
+      </div>
+    );
   }
 
   if (error) {
     const mensagem = error instanceof ApiError ? error.detail : "Não foi possível carregar os membros.";
-    return <p role="alert">{mensagem}</p>;
+    return (
+      <div className="mx-auto max-w-3xl">
+        <Alert>{mensagem}</Alert>
+      </div>
+    );
   }
 
   if (!data) {
@@ -76,36 +93,65 @@ export function CommunityModeratorsPage() {
   }
 
   return (
-    <div>
-      <h1>Gerir moderadores</h1>
+    <div className="mx-auto max-w-3xl">
+      <PageHeader
+        eyebrow="Equipa"
+        title="Gerir moderadores"
+        description="Os moderadores partilham tips e ajudam a manter a comunidade. Podes nomear e remover a qualquer momento."
+      />
 
-      {erroAcao && <p role="alert">{erroAcao}</p>}
+      {erroAcao && <Alert className="mb-6">{erroAcao}</Alert>}
 
-      <ul>
-        {data.map((membro) => (
-          <li key={membro.userId}>
-            <span>{membro.displayName}</span> <span data-testid={`papel-${membro.userId}`}>{membro.role}</span>{" "}
-            {membro.role === "MEMBER" && (
-              <button
-                type="button"
-                onClick={() => nomear(membro.userId)}
-                disabled={aProcessar === membro.userId}
-              >
-                Nomear moderador
-              </button>
-            )}
-            {membro.role === "MODERATOR" && (
-              <button
-                type="button"
-                onClick={() => remover(membro.userId)}
-                disabled={aProcessar === membro.userId}
-              >
-                Remover moderador
-              </button>
-            )}
-          </li>
-        ))}
-      </ul>
+      <Card className="overflow-hidden">
+        <ul>
+          {data.map((membro) => (
+            <li
+              key={membro.userId}
+              className="flex flex-wrap items-center gap-4 border-b border-white/[0.05] px-5 py-4 transition last:border-b-0 hover:bg-white/[0.02]"
+            >
+              <Avatar name={membro.displayName} size="sm" />
+
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-medium text-ink-50">{membro.displayName}</p>
+                <p className="truncate text-xs text-ink-500">
+                  @{membro.username}
+                  {membro.joinedAt && ` · desde ${formatarData(membro.joinedAt)}`}
+                </p>
+              </div>
+
+              {/* Larguras fixas: os papéis e os botões alinham em coluna, linha a linha. */}
+              <div className="flex justify-end sm:w-32">
+                <StatusBadge value={membro.role} testId={`papel-${membro.userId}`} />
+              </div>
+
+              <div className="flex w-full justify-end sm:w-48">
+                {membro.role === "MEMBER" && (
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => nomear(membro.userId)}
+                    loading={aProcessar === membro.userId}
+                  >
+                    Nomear moderador
+                  </Button>
+                )}
+                {membro.role === "MODERATOR" && (
+                  <Button
+                    type="button"
+                    variant="danger"
+                    size="sm"
+                    onClick={() => remover(membro.userId)}
+                    loading={aProcessar === membro.userId}
+                  >
+                    Remover moderador
+                  </Button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </Card>
     </div>
   );
 }

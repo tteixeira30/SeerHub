@@ -54,6 +54,6 @@ describe("MySubscriptionsPage", () => {
     for (const subscricao of SUBSCRICOES) {
       expect(screen.getByText(subscricao.communityName)).toBeInTheDocument();
     }
-    expect(screen.getAllByText("ACTIVE")).toHaveLength(SUBSCRICOES.length);
+    expect(screen.getAllByText("Ativa")).toHaveLength(SUBSCRICOES.length);
   });
 });

@@ -126,7 +126,8 @@ describe("CommunityPage", () => {
     fireEvent.click(botaoSubscrever);
 
     await waitFor(() => {
-      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("2026-08-26T12:00:00.000Z");
+      // A data é mostrada como o utilizador a lê, não como o backend a envia.
+      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("26/08/2026");
     });
     expect(screen.getByRole("button", { name: "Cancelar subscrição" })).toBeInTheDocument();
     await waitFor(() => {
@@ -144,12 +145,31 @@ describe("CommunityPage", () => {
     fireEvent.click(botaoCancelar);
 
     await waitFor(() => {
-      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("Mantém acesso até 2026-08-20T12:00:00.000Z");
+      expect(screen.getByTestId("estado-subscricao")).toHaveTextContent("Mantém acesso até 20/08/2026");
     });
     // A prova de acesso: a área de membro continua acessível depois de cancelar.
     await waitFor(() => {
       expect(screen.getByText("Bem-vindo à área de membro.")).toBeInTheDocument();
     });
+  });
+
+  /**
+   * Quem nunca subscreveu também leva `403` na área de membro — mas não teve
+   * subscrição nenhuma a expirar. O aviso lê o estado de `/access` (aqui
+   * `null`) e convida em vez de acusar; o botão de subscrever fica só no
+   * painel lateral, para não haver duas ações iguais no mesmo ecrã.
+   */
+  it("quemNuncaSubscreveuVeUmConviteEnaoUmAvisoDeSubscricaoExpirada", async () => {
+    const estado: { subscrito: boolean; status: "ACTIVE" | "CANCELLED" | "EXPIRED" | null; expiresAt: string | null } =
+        { subscrito: false, status: null, expiresAt: null };
+    instalarFetchMock(estado);
+
+    renderizar();
+
+    expect(await screen.findByText("Conteúdo reservado a membros.")).toBeInTheDocument();
+    expect(screen.queryByText("A sua subscrição expirou.")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Subscrever de novo" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Subscrever" })).toBeInTheDocument();
   });
 
   it("erro403NaAreaDeMembroMostraOEcraDeResubscricao", async () => {

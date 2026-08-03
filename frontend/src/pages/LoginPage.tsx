@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { Alert } from "@/components/ui/Alert";
+import { Button } from "@/components/ui/Button";
+import { Field } from "@/components/ui/Field";
 import { ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 
@@ -36,32 +39,50 @@ export function LoginPage() {
 
   return (
     <div>
-      <h1>Entrar</h1>
-      <form onSubmit={submeter}>
-        <label htmlFor="email">Email</label>
-        <input
+      <div className="mb-7">
+        <h1 className="text-xl font-semibold tracking-tight text-white">Entrar</h1>
+        <p className="mt-1.5 text-sm text-ink-400">Bem-vindo de volta ao teu hub.</p>
+      </div>
+
+      <form onSubmit={submeter} className="space-y-5">
+        <Field
           id="email"
+          label="Email"
           type="email"
+          autoComplete="email"
+          placeholder="tu@exemplo.pt"
           value={email}
           onChange={(evento) => setEmail(evento.target.value)}
           required
         />
 
-        <label htmlFor="password">Password</label>
-        <input
+        <Field
           id="password"
+          label="Password"
           type="password"
+          autoComplete="current-password"
+          placeholder="••••••••••"
           value={password}
           onChange={(evento) => setPassword(evento.target.value)}
           required
         />
 
-        {erro && <p role="alert">{erro}</p>}
+        {erro && <Alert>{erro}</Alert>}
 
-        <button type="submit" disabled={aEnviar}>
+        <Button type="submit" fullWidth size="lg" loading={aEnviar}>
           Entrar
-        </button>
+        </Button>
       </form>
+
+      <p className="mt-7 text-center text-sm text-ink-400">
+        Ainda não tens conta?{" "}
+        <Link
+          to="/registo"
+          className="rounded font-medium text-brand-400 underline-offset-4 transition hover:text-brand-300 hover:underline"
+        >
+          Criar conta
+        </Link>
+      </p>
     </div>
   );
 }

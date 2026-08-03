@@ -61,12 +61,12 @@ describe("CommunityModeratorsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Ana")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("papel-2")).toHaveTextContent("MEMBER");
+    expect(screen.getByTestId("papel-2")).toHaveTextContent("Membro");
 
     fireEvent.click(screen.getByRole("button", { name: "Nomear moderador" }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("papel-2")).toHaveTextContent("MODERATOR");
+      expect(screen.getByTestId("papel-2")).toHaveTextContent("Moderador");
     });
     expect(screen.getByRole("button", { name: "Remover moderador" })).toBeInTheDocument();
   });
@@ -98,12 +98,12 @@ describe("CommunityModeratorsPage", () => {
     await waitFor(() => {
       expect(screen.getByText("Rui")).toBeInTheDocument();
     });
-    expect(screen.getByTestId("papel-3")).toHaveTextContent("MODERATOR");
+    expect(screen.getByTestId("papel-3")).toHaveTextContent("Moderador");
 
     fireEvent.click(screen.getByRole("button", { name: "Remover moderador" }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("papel-3")).toHaveTextContent("MEMBER");
+      expect(screen.getByTestId("papel-3")).toHaveTextContent("Membro");
     });
     expect(screen.getByRole("button", { name: "Nomear moderador" })).toBeInTheDocument();
   });
